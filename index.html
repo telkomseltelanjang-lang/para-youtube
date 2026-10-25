@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>NontonYuk - Streamer App</title>
     
-    <!-- PWA TAGS -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#b000ff">
     <link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=NontonYuk&background=b000ff&color=fff&size=192&rounded=true">
@@ -56,31 +55,264 @@
         .meta-info { font-size: 11px; color: var(--text-muted); margin: 2px 0 0 0; }
 
         /* =========================================
-           PEMUTAR VIDEO HTML5 (STREAMING LANGSUNG)
+           PEMUTAR VIDEO - TANPA LAYAR HITAM
            ========================================= */
         #player-container { display: none; padding: 15px; }
         
-        .wrapper-iframe-kustom {
+        .wrapper-video {
             position: relative;
             width: 100%;
             aspect-ratio: 16/9;
             border: 2px solid var(--accent-color);
             border-radius: 15px;
             background: #000;
-            overflow: hidden; 
+            overflow: hidden;
         }
 
-        .wrapper-iframe-kustom video {
+        /* IFRAME YOUTUBE - Dibuat Full Menutupi Wrapper */
+        #yt-target {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            pointer-events: none; /* Kunci klik YouTube */
+        }
+
+        #yt-target iframe {
             width: 100%;
             height: 100%;
-            object-fit: contain;
-            background: #000;
-            display: block;
+            border: none;
+            pointer-events: none;
+        }
+
+        /* LAPISAN TRANSPARAN PENGHALANG KLIK (Anti-Missclick) */
+        .invisible-shield {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 8;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        /* OVERLAY AWAL - hanya muncul sebelum video diputar */
+        .overlay-nontonyuk {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 10;
+            background: rgba(18, 10, 31, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: opacity 0.4s ease, background 0.4s ease;
+        }
+
+        .overlay-nontonyuk.sembunyi {
+            opacity: 0;
+            background: transparent;
+            pointer-events: none;
+        }
+
+        .btn-ungu {
+            width: 70px;
+            height: 70px;
+            background: rgba(176, 0, 255, 0.9);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 28px;
+            box-shadow: 0 0 20px rgba(176, 0, 255, 0.8);
+            margin-bottom: 15px;
+        }
+
+        .overlay-nontonyuk h3 {
+            margin: 0;
+            color: white;
+            font-size: 16px;
+            text-align: center;
+            padding: 0 20px;
+            font-weight: bold;
+        }
+
+        .overlay-nontonyuk p {
+            margin: 8px 0 0 0;
+            color: #ccc;
+            font-size: 12px;
+        }
+
+        /* =========================================
+           KONTROL CUSTOM NONTONYUK
+           ========================================= */
+        .kontrol-nontonyuk {
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 100%;
+            z-index: 20;
+            padding: 10px 12px 12px 12px;
+            box-sizing: border-box;
+            background: linear-gradient(to top, rgba(0,0,0,0.95), transparent);
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .kontrol-nontonyuk.aktif { display: flex; }
+
+        .progress-wrapper {
+            width: 100%;
+            height: 5px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 5px;
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-color);
+            width: 0%;
+            transition: width 0.2s linear;
+            border-radius: 5px;
+            box-shadow: 0 0 8px var(--accent-color);
+        }
+
+        .baris-kontrol {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .grup-kiri, .grup-kanan {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-yt-custom {
+            background: rgba(176, 0, 255, 0.85);
+            border: none;
+            color: white;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: 0.2s;
+            backdrop-filter: blur(5px);
+        }
+
+        .btn-yt-custom:active {
+            transform: scale(0.9);
+            background: var(--accent-color);
+        }
+
+        .btn-yt-custom.kecil {
+            width: 32px; height: 32px;
+            font-size: 13px;
+            background: rgba(30, 17, 46, 0.85);
+            border: 1px solid var(--accent-color);
+        }
+
+        .timer-yt {
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            font-variant-numeric: tabular-nums;
+            background: rgba(0,0,0,0.6);
+            padding: 4px 8px;
+            border-radius: 10px;
+        }
+
+        .volume-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(30, 17, 46, 0.85);
+            border: 1px solid var(--accent-color);
+            border-radius: 20px;
+            padding: 3px 8px;
+            height: 32px;
+        }
+
+        .volume-wrapper input[type="range"] {
+            width: 60px;
+            height: 3px;
+            accent-color: var(--accent-color);
+            cursor: pointer;
+        }
+
+        /* Menu setting custom */
+        .menu-yt-custom {
+            position: absolute;
+            bottom: 70px;
+            right: 12px;
+            background: rgba(30, 17, 46, 0.98);
+            border: 1px solid var(--accent-color);
+            border-radius: 12px;
+            padding: 8px;
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            z-index: 25;
+            min-width: 160px;
+            backdrop-filter: blur(10px);
+        }
+
+        .menu-yt-custom.aktif { display: flex; }
+
+        .menu-yt-custom button {
+            background: transparent;
+            border: none;
+            color: white;
+            text-align: left;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .menu-yt-custom button:active { background: var(--accent-color); }
+
+        /* Toast notifikasi in-video */
+        .toast-video {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 30;
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toast-video.tampil {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
         }
 
         .back-btn { background: var(--card-color); border: 1px solid var(--border-color); margin-bottom: 15px; padding: 10px 20px; font-size: 13px; border-radius: 30px; color: white; cursor: pointer;}
         
-        /* UI NONTONYUK */
         .judul-video { font-size: 18px; font-weight: bold; margin: 15px 0 5px 0; color: var(--text-color); }
         .video-meta-player { font-size: 12px; color: var(--text-muted); margin-bottom: 15px; }
         .channel-info-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding: 5px 0;}
@@ -121,7 +353,8 @@
         #halaman-shorts { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 40; }
         #shorts-player-container { width: 100%; height: 100%; position: relative; overflow: hidden;}
         
-        #shorts-player-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; z-index: 1; transform: scale(1.35); }
+        /* Zoom in untuk shorts agar UI YouTube terpotong */
+        #shorts-player-container iframe { position: absolute; top: -10%; left: -10%; width: 120%; height: 120%; border: none; z-index: 1; pointer-events: none;}
         
         .shorts-overlay { position: absolute; bottom: 75px; left: 0; width: 100%; padding: 15px 20px; box-sizing: border-box; z-index: 99; background: linear-gradient(to top, rgba(18, 10, 31, 0.8), transparent); display: flex; justify-content: space-between; align-items: flex-end;}
         .info-kiri { flex: 1; padding-right: 15px; }
@@ -129,6 +362,12 @@
         .info-kiri p { margin: 0 0 10px 0; font-size: 13px; color: #ddd; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;}
         .aksi-kanan { display: flex; flex-direction: column; gap: 12px; align-items: center; }
         .btn-aksi { background: rgba(30, 17, 46, 0.8); border: 1px solid var(--accent-color); width: 45px; height: 45px; border-radius: 50%; color: white; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 20px; z-index: 100;}
+        
+        .shorts-pelindung-atas, .shorts-pelindung-bawah {
+            position: absolute; left: 0; width: 100%; z-index: 2; pointer-events: none;
+        }
+        .shorts-pelindung-atas { top: 0; height: 80px; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); }
+        .shorts-pelindung-bawah { bottom: 0; height: 80px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); }
 
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--card-color); display: flex; justify-content: space-around; padding: 12px 0; z-index: 100; border-top: 1px solid var(--border-color);}
         .nav-item { color: var(--text-muted); text-decoration: none; font-size: 11px; display: flex; flex-direction: column; align-items: center; cursor: pointer; border: none; background: none;}
@@ -172,7 +411,7 @@
         <div class="navbar" id="search-header">
             <input type="text" id="search-input" placeholder="Cari sesuatu yang seru...">
             <button onclick="cariVideo()">🔍</button>
-            <button onclick="konfirmasiLogout()" style="background:#333; padding:10px; border-radius:50%;">🚪</button>
+            <button onclick="prosesLogout()" style="background:#333; padding:10px; border-radius:50%;">🚪</button>
         </div>
 
         <div class="category-chips" id="category-chips">
@@ -190,9 +429,50 @@
         <div id="player-container">
             <button class="back-btn" onclick="tutupPemutar()">← Balik</button>
             
-            <div class="wrapper-iframe-kustom">
-                <!-- PEMUTAR VIDEO ASLI KITA (HTML5) -->
-                <video id="video-player-utama" controls playsinline poster=""></video>
+            <!-- WRAPPER VIDEO -->
+            <div class="wrapper-video" id="wrapper-video">
+                <div id="yt-target"></div>
+
+                <!-- Overlay play awal -->
+                <div class="overlay-nontonyuk" id="overlay-nontonyuk" onclick="hilangkanOverlay()">
+                    <div class="btn-ungu">▶</div>
+                    <h3 id="overlay-title">Judul Video</h3>
+                    <p>Ketuk untuk memutar</p>
+                </div>
+
+                <!-- Lapisan transparan penangkap klik agar YouTube tidak bisa disentuh -->
+                <div class="invisible-shield" id="invisible-shield" onclick="toggleKontrolVideo()"></div>
+
+                <div class="kontrol-nontonyuk" id="kontrol-nontonyuk">
+                    <div class="progress-wrapper" onclick="seekVideo(event)">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <div class="baris-kontrol">
+                        <div class="grup-kiri">
+                            <button class="btn-yt-custom" id="btn-play-pause" onclick="togglePlayPause()">⏸</button>
+                            <button class="btn-yt-custom kecil" onclick="seekRelative(-10)" title="-10 detik">⏪</button>
+                            <button class="btn-yt-custom kecil" onclick="seekRelative(10)" title="+10 detik">⏩</button>
+                            <span class="timer-yt" id="timer-yt">0:00 / 0:00</span>
+                        </div>
+                        <div class="grup-kanan">
+                            <div class="volume-wrapper">
+                                <span style="font-size:12px;">🔊</span>
+                                <input type="range" id="volume-slider" min="0" max="100" value="100" oninput="setVolume(this.value)">
+                            </div>
+                            <button class="btn-yt-custom kecil" onclick="toggleMenuKontrol()">⚙️</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="menu-yt-custom" id="menu-yt-custom">
+                    <button onclick="ubahKecepatan(0.5)">🐢 0.5x</button>
+                    <button onclick="ubahKecepatan(1)">▶️ Normal</button>
+                    <button onclick="ubahKecepatan(1.5)">⚡ 1.5x</button>
+                    <button onclick="ubahKecepatan(2)">🔥 2x</button>
+                    <button onclick="muatUlangVideo()">🔄 Ulang Video</button>
+                </div>
+
+                <div class="toast-video" id="toast-video"></div>
             </div>
             
             <div class="judul-video" id="judul-video-putar"></div>
@@ -244,6 +524,21 @@
         </div>
     </div>
 
+    <!-- SCRIPT YOUTUBE API -->
+    <script>
+        if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+            var tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            var firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        }
+
+        window.onYouTubeIframeAPIReady = function() {
+            window.ytApiReady = true;
+        };
+    </script>
+
+    <!-- SCRIPT UTAMA APLIKASI -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -263,11 +558,6 @@
         const db = getFirestore(app);
 
         const YOUTUBE_API_KEY = 'AIzaSyDTFnT4l7qMJ6fk4SKKjo8m3DDSFE6yhK4'; 
-        
-        // =========================================
-        // GANTI URL INI DENGAN LINK PXXL KAMU
-        // =========================================
-        const BACKEND_URL = 'https://nontonyuk.pxxlspace.cv'; 
 
         let currentVideoId = "";
         let currentShortsId = "";
@@ -276,6 +566,12 @@
         let userAktif = "";
         let uidAktif = "";
         let kategoriAktif = "Semua";
+        let videoSedangJalan = false;
+        let ytPlayer = null;
+        let ytReady = false;
+        let currentSpeed = 1;
+        let kontrolTimeout = null;
+        let progressInterval = null;
 
         function buatMetaTeks(views, publishedAt) {
             let parts = [];
@@ -316,27 +612,174 @@
         }
         window.tutupPopup = () => { document.getElementById('popup-kustom').style.display = 'none'; }
 
-        window.konfirmasiLogout = () => {
-            const popup = document.getElementById('popup-kustom');
-            const content = popup.querySelector('.modal-content');
-            const originalHTML = content.innerHTML; 
-            content.innerHTML = `
-                <h3 id="popup-title" style="color:var(--accent-color);">Keluar Akun</h3>
-                <p id="popup-message">Apakah Anda yakin ingin keluar dari akun?</p>
-                <button class="btn-modal btn-modal-primary" id="btn-konfirmasi-ya">Ya, Keluar</button>
-                <button class="btn-modal" style="background:#333; color:white;" id="btn-konfirmasi-batal">Batal</button>
-            `;
-            popup.style.display = 'flex';
-            document.getElementById('btn-konfirmasi-ya').onclick = async () => { await signOut(auth); location.reload(); };
-            document.getElementById('btn-konfirmasi-batal').onclick = () => { popup.style.display = 'none'; content.innerHTML = originalHTML; };
+        window.prosesLogout = async () => {
+            if (confirm("Keluar dari akun?")) { await signOut(auth); location.reload(); }
         }
 
-        // =========================================
-        // FUNGSI UTAMA PUTAR VIDEO (STREAMING LANGSUNG)
-        // =========================================
-        window.putarVideo = async (videoId, title, channelName, chId = "", views = 0, publishedAt = "") => {
-            currentVideoId = videoId;
+        // ===== FUNGSI OVERLAY & KONTROL =====
+        window.hilangkanOverlay = () => {
+            const overlay = document.getElementById('overlay-nontonyuk');
+            overlay.classList.add('sembunyi');
+            videoSedangJalan = true;
             
+            if (ytPlayer && ytReady && typeof ytPlayer.playVideo === 'function') {
+                try { ytPlayer.playVideo(); } catch(e) {}
+            }
+            tampilkanKontrol();
+        }
+
+        window.togglePlayPause = () => {
+            if (!ytPlayer || !ytReady) return;
+            try {
+                const state = ytPlayer.getPlayerState();
+                if (state === 1) {
+                    ytPlayer.pauseVideo();
+                } else {
+                    ytPlayer.playVideo();
+                }
+                tampilkanKontrol();
+            } catch(e) {}
+        };
+
+        window.seekRelative = (detik) => {
+            if (!ytPlayer || typeof ytPlayer.getCurrentTime !== 'function') return;
+            try {
+                const curr = ytPlayer.getCurrentTime();
+                ytPlayer.seekTo(curr + detik, true);
+                tampilkanKontrol();
+            } catch(e) {}
+        };
+
+        window.seekVideo = (event) => {
+            if (!ytPlayer || typeof ytPlayer.getDuration !== 'function') return;
+            try {
+                const rect = event.currentTarget.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const pct = Math.max(0, Math.min(1, x / rect.width));
+                const dur = ytPlayer.getDuration();
+                ytPlayer.seekTo(pct * dur, true);
+            } catch(e) {}
+        };
+
+        window.setVolume = (val) => {
+            if (!ytPlayer || typeof ytPlayer.setVolume !== 'function') return;
+            try {
+                ytPlayer.setVolume(parseInt(val));
+                ytPlayer.unMute();
+            } catch(e) {}
+        };
+
+        window.ubahKecepatan = (speed) => {
+            if (!ytPlayer || typeof ytPlayer.setPlaybackRate !== 'function') return;
+            try {
+                ytPlayer.setPlaybackRate(speed);
+                currentSpeed = speed;
+                tampilkanToast('Kecepatan: ' + speed + 'x');
+                document.getElementById('menu-yt-custom').classList.remove('aktif');
+            } catch(e) {}
+        };
+
+        window.toggleMenuKontrol = () => {
+            document.getElementById('menu-yt-custom').classList.toggle('aktif');
+        };
+
+        window.toggleKontrolVideo = () => {
+            const kontrol = document.getElementById('kontrol-nontonyuk');
+            if (kontrol.classList.contains('aktif')) {
+                kontrol.classList.remove('aktif');
+                document.getElementById('menu-yt-custom').classList.remove('aktif');
+            } else {
+                tampilkanKontrol();
+            }
+        };
+
+        function tampilkanKontrol() {
+            document.getElementById('kontrol-nontonyuk').classList.add('aktif');
+            autoHideKontrol();
+        }
+
+        function autoHideKontrol() {
+            if (kontrolTimeout) clearTimeout(kontrolTimeout);
+            kontrolTimeout = setTimeout(() => {
+                const kontrol = document.getElementById('kontrol-nontonyuk');
+                const state = (ytPlayer && ytPlayer.getPlayerState) ? ytPlayer.getPlayerState() : 0;
+                if (state === 1) {
+                    kontrol.classList.remove('aktif');
+                    document.getElementById('menu-yt-custom').classList.remove('aktif');
+                }
+            }, 3500);
+        }
+
+        function tampilkanToast(teks) {
+            const toast = document.getElementById('toast-video');
+            toast.innerText = teks;
+            toast.classList.add('tampil');
+            setTimeout(() => toast.classList.remove('tampil'), 1500);
+        }
+
+        function handlePlayerState(state) {
+            const btnPlay = document.getElementById('btn-play-pause');
+            if (state === 1) {
+                if (btnPlay) btnPlay.innerText = '⏸';
+                mulaiUpdateProgress();
+                autoHideKontrol();
+            } else if (state === 2) {
+                if (btnPlay) btnPlay.innerText = '▶';
+                tampilkanKontrol();
+                stopUpdateProgress();
+            } else if (state === 0) {
+                if (btnPlay) btnPlay.innerText = '🔄';
+                tampilkanKontrol();
+                stopUpdateProgress();
+            }
+        }
+
+        function mulaiUpdateProgress() {
+            stopUpdateProgress();
+            progressInterval = setInterval(() => {
+                if (!ytPlayer || typeof ytPlayer.getCurrentTime !== 'function') return;
+                try {
+                    const curr = ytPlayer.getCurrentTime() || 0;
+                    const dur = ytPlayer.getDuration() || 0;
+                    if (dur > 0) {
+                        const pct = (curr / dur) * 100;
+                        document.getElementById('progress-fill').style.width = pct + '%';
+                        document.getElementById('timer-yt').innerText = formatWaktu(curr) + ' / ' + formatWaktu(dur);
+                    }
+                } catch(e) {}
+            }, 500);
+        }
+
+        function stopUpdateProgress() {
+            if (progressInterval) {
+                clearInterval(progressInterval);
+                progressInterval = null;
+            }
+        }
+
+        function formatWaktu(detik) {
+            detik = Math.floor(detik);
+            const m = Math.floor(detik / 60);
+            const s = detik % 60;
+            return m + ':' + (s < 10 ? '0' : '') + s;
+        }
+
+        window.muatUlangVideo = () => {
+            if (!ytPlayer || typeof ytPlayer.seekTo !== 'function') return;
+            try {
+                ytPlayer.seekTo(0, true);
+                ytPlayer.playVideo();
+                document.getElementById('menu-yt-custom').classList.remove('aktif');
+                tampilkanToast('🔄 Video diulang');
+            } catch(e) {}
+        };
+
+        // ===== FUNGSI PUTAR VIDEO =====
+        window.putarVideo = (videoId, title, channelName, chId = "", views = 0, publishedAt = "") => {
+            currentVideoId = videoId;
+            videoSedangJalan = false;
+            currentSpeed = 1;
+
             if (!channelName || typeof channelName !== 'string' || channelName.includes("Nama Channel") || channelName === "undefined" || channelName.trim() === "") {
                 channelName = "NontonYuk Channel";
             }
@@ -347,6 +790,7 @@
             document.getElementById('video-channel-name').innerText = currentChannelName;
             document.getElementById('video-channel-pfp').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentChannelName)}&background=1e112e&color=b000ff&rounded=true&bold=true`;
             document.getElementById('meta-video-putar').innerText = buatMetaTeks(views, publishedAt);
+            document.getElementById('overlay-title').innerText = title || "Video NontonYuk";
 
             document.getElementById('halaman-beranda').style.display = 'none';
             document.getElementById('halaman-channel').style.display = 'none';
@@ -356,26 +800,69 @@
             document.getElementById('player-container').style.display = 'block';
             window.scrollTo(0, 0);
 
-            const videoElement = document.getElementById('video-player-utama');
-            videoElement.poster = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-            
-            // Hentikan video sebelumnya (jika ada)
-            videoElement.pause();
-            videoElement.removeAttribute('src'); 
-            videoElement.load(); 
+            const overlay = document.getElementById('overlay-nontonyuk');
+            overlay.classList.remove('sembunyi');
+            document.getElementById('kontrol-nontonyuk').classList.remove('aktif');
+            document.getElementById('menu-yt-custom').classList.remove('aktif');
+            document.getElementById('progress-fill').style.width = '0%';
+            document.getElementById('timer-yt').innerText = '0:00 / 0:00';
 
-            try {
-                // KUNCI UTAMA: LANGSUNG ARAHKAN SRC KE ENDPOINT STREAMING BACKEND
-                videoElement.src = `${BACKEND_URL}/api/stream-video?id=${videoId}`;
+            document.getElementById('yt-target').innerHTML = '';
+            
+            const divTarget = document.createElement('div');
+            divTarget.id = 'yt-player-target';
+            document.getElementById('yt-target').appendChild(divTarget);
+
+            if (ytPlayer && typeof ytPlayer.destroy === 'function') {
+                try { ytPlayer.destroy(); } catch(e) {}
+            }
+
+            const initPlayer = () => {
+                if (!document.getElementById('yt-player-target')) return;
                 
-                // Coba putar otomatis
-                videoElement.play().catch(e => {
-                    console.log("Autoplay diblokir browser, user harus klik tombol play di video.");
+                ytPlayer = new YT.Player('yt-player-target', {
+                    videoId: videoId,
+                    playerVars: {
+                        autoplay: 1,
+                        controls: 0,
+                        modestbranding: 1,
+                        rel: 0,
+                        fs: 0,
+                        iv_load_policy: 3,
+                        disablekb: 1,
+                        showinfo: 0,
+                        cc_load_policy: 0,
+                        playsinline: 1,
+                        origin: window.location.origin
+                    },
+                    events: {
+                        onReady: (e) => {
+                            ytReady = true;
+                            e.target.setVolume(100);
+                            e.target.playVideo();
+                        },
+                        onStateChange: (e) => {
+                            handlePlayerState(e.data);
+                        }
+                    }
                 });
-                
-            } catch (e) {
-                console.error(e);
-                tampilkanPesan("Server NontonYuk sedang offline atau sibuk. Coba lagi nanti.", "Error Server");
+            };
+
+            if (typeof YT !== 'undefined' && typeof YT.Player !== 'undefined') {
+                initPlayer();
+            } else {
+                let attempts = 0;
+                const maxAttempts = 50; 
+                const checkYT = setInterval(() => {
+                    attempts++;
+                    if (typeof YT !== 'undefined' && typeof YT.Player !== 'undefined') {
+                        clearInterval(checkYT);
+                        initPlayer();
+                    } else if (attempts >= maxAttempts) {
+                        clearInterval(checkYT);
+                        tampilkanPesan("Gagal memuat YouTube. Periksa koneksi internet kamu.", "Error Jaringan");
+                    }
+                }, 100);
             }
 
             cekStatusLike(videoId);
@@ -415,17 +902,14 @@
                 });
                 
                 if(count === 0) {
-                    container.innerHTML = '<p style="grid-column: span 2; color:var(--text-muted); text-align:center; padding: 20px; border: 1px dashed var(--border-color); border-radius: 10px;">Belum ada video rekomendasi lain. Ayo cari video baru untuk menambah isi database!</p>';
+                    container.innerHTML = '<p style="grid-column: span 2; color:var(--text-muted); text-align:center; padding: 20px; border: 1px dashed var(--border-color); border-radius: 10px;">Belum ada video rekomendasi lain.</p>';
                 }
             } catch(e) { 
-                console.log("Gagal load rekomendasi", e);
                 container.innerHTML = '<p style="grid-column: span 2; color:red; text-align:center;">Gagal memuat rekomendasi.</p>';
             }
         }
 
-        // =========================================
-        // SISA FUNGSI (SHORTS, CARI, DLL)
-        // =========================================
+        // ===== SHORTS =====
         window.bukaShorts = async () => {
             document.getElementById('nav-beranda').classList.remove('active');
             document.getElementById('nav-shorts').classList.add('active');
@@ -468,8 +952,10 @@
 
             const origin = window.location.origin;
             document.getElementById('shorts-player-container').innerHTML = `
-                <iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&loop=1&playlist=${videoId}&controls=0&modestbranding=1&rel=0&playsinline=1&fs=0&origin=${origin}" 
+                <iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&loop=1&playlist=${videoId}&controls=0&modestbranding=1&rel=0&playsinline=1&fs=0&iv_load_policy=3&disablekb=1&showinfo=0&origin=${origin}" 
                     referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                <div class="shorts-pelindung-atas"></div>
+                <div class="shorts-pelindung-bawah"></div>
                 <div class="shorts-overlay">
                     <div class="info-kiri"><h4>@${channelName}</h4><p>${title}</p></div>
                     <div class="aksi-kanan">
@@ -512,6 +998,7 @@
             } catch(e) {}
         }
 
+        // ===== PENCARIAN =====
         window.cariVideo = async () => {
             const queryText = document.getElementById('search-input').value;
             if (!queryText) return tampilkanPesan("Ketik dulu yang mau dicari!", "Peringatan");
@@ -533,21 +1020,6 @@
                 if (dataVideo.error) return tampilkanPesan("Gagal mencari: " + dataVideo.error.message, "Error API");
 
                 if (dataVideo.items && dataVideo.items.length > 0) {
-                    const videoIds = dataVideo.items.map(item => item.id.videoId).filter(id => id).join(',');
-                    let viewCounts = {};
-
-                    if (videoIds) {
-                        try {
-                            const resStats = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoIds}&key=${YOUTUBE_API_KEY}`);
-                            const statsData = await resStats.json();
-                            if (statsData.items) {
-                                statsData.items.forEach(stat => {
-                                    viewCounts[stat.id] = parseInt(stat.statistics.viewCount || 0);
-                                });
-                            }
-                        } catch(e) { console.log("Gagal ambil views", e); }
-                    }
-
                     for (const item of dataVideo.items) {
                         const videoId = item.id.videoId;
                         if (!videoId) continue; 
@@ -556,25 +1028,23 @@
                         const thumbnail = item.snippet.thumbnails.high.url;
                         const publishedAt = item.snippet.publishedAt;
                         const chId = item.snippet.channelId;
-                        const views = viewCounts[videoId] || 0;
 
                         try {
                             await setDoc(doc(db, "database_video", videoId), {
                                 videoId: videoId, title: title, channel: channel, channelId: chId, 
-                                thumbnail: thumbnail, publishedAt: publishedAt, views: views, savedAt: new Date()
+                                thumbnail: thumbnail, publishedAt: publishedAt, savedAt: new Date()
                             });
                         } catch (e) {}
 
                         const card = document.createElement('div');
                         card.className = 'video-card';
-                        card.onclick = () => putarVideo(videoId, title, channel, chId, views, publishedAt); 
+                        card.onclick = () => putarVideo(videoId, title, channel, chId); 
                         
                         card.innerHTML = `
                             <img src="${thumbnail}" loading="lazy">
                             <div class="video-info">
                                 <h3 class="video-title">${title}</h3>
                                 <p class="channel-title">${channel}</p>
-                                <p class="meta-info">${buatMetaTeks(views, publishedAt)}</p>
                             </div>
                         `;
                         container.appendChild(card);
@@ -583,7 +1053,7 @@
             } catch (e) { tampilkanPesan("Gagal mengambil data.", "Error"); }
         }
 
-        async function ambilVideoBeranda(kategori = "Semua") {
+        async function ambilVideoBeranda() {
             document.getElementById('halaman-beranda').style.display = 'block';
             document.getElementById('halaman-channel').style.display = 'none';
             document.getElementById('halaman-shorts').style.display = 'none';
@@ -591,7 +1061,7 @@
             document.getElementById('search-header').style.display = 'flex';
             document.getElementById('category-chips').style.display = 'flex';
             
-            document.getElementById('judul-halaman').innerText = `🔥 Database NontonYuk (${kategori})`;
+            document.getElementById('judul-halaman').innerText = `🔥 Database NontonYuk`;
             const container = document.getElementById('video-list');
             container.innerHTML = '<p style="text-align:center; grid-column: span 2;">Memuat database...</p>';
             
@@ -606,24 +1076,19 @@
                 }
 
                 querySnapshot.forEach((doc) => {
-                    try {
-                        const item = doc.data();
-                        if (kategori !== "Semua" && !item.title.toLowerCase().includes(kategori.toLowerCase())) return;
-
-                        const card = document.createElement('div');
-                        card.className = 'video-card';
-                        card.onclick = () => putarVideo(item.videoId, item.title, item.channel, item.channelId, item.views, item.publishedAt);
-                        
-                        card.innerHTML = `
-                            <img src="${item.thumbnail || ''}" loading="lazy">
-                            <div class="video-info">
-                                <h3 class="video-title">${item.title || 'Tanpa Judul'}</h3>
-                                <p class="channel-title">${item.channel || 'NontonYuk'}</p>
-                                <p class="meta-info">${buatMetaTeks(item.views, item.publishedAt)}</p>
-                            </div>
-                        `;
-                        container.appendChild(card);
-                    } catch(err) { console.log("Err card beranda", err); }
+                    const item = doc.data();
+                    const card = document.createElement('div');
+                    card.className = 'video-card';
+                    card.onclick = () => putarVideo(item.videoId, item.title, item.channel, item.channelId);
+                    
+                    card.innerHTML = `
+                        <img src="${item.thumbnail || ''}" loading="lazy">
+                        <div class="video-info">
+                            <h3 class="video-title">${item.title || 'Tanpa Judul'}</h3>
+                            <p class="channel-title">${item.channel || 'NontonYuk'}</p>
+                        </div>
+                    `;
+                    container.appendChild(card);
                 });
             } catch (e) {
                 container.innerHTML = `<p style="text-align:center; grid-column: span 2; color:red;">Error: ${e.message}</p>`;
@@ -634,34 +1099,54 @@
             document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
             elemen.classList.add('active');
             kategoriAktif = kategori;
-            ambilVideoBeranda(kategori);
+            ambilVideoBeranda();
         }
 
+        // ===== NAVIGASI =====
         window.bukaBeranda = () => {
             document.getElementById('nav-beranda').classList.add('active');
             document.getElementById('nav-shorts').classList.remove('active');
+            stopUpdateProgress();
+            if (ytPlayer && typeof ytPlayer.destroy === 'function') {
+                try { ytPlayer.destroy(); } catch(e) {}
+            }
+            ytPlayer = null;
+            ytReady = false;
+            document.getElementById('yt-target').innerHTML = '';
             document.getElementById('player-container').style.display = 'none';
-            document.getElementById('shorts-player-container').innerHTML = '';
-            const videoElement = document.getElementById('video-player-utama');
-            if(videoElement) { videoElement.pause(); videoElement.removeAttribute('src'); videoElement.load(); }
-            ambilVideoBeranda(kategoriAktif);
+            document.getElementById('halaman-shorts').style.display = 'none';
+            document.getElementById('halaman-beranda').style.display = 'block';
+            document.getElementById('search-header').style.display = 'flex';
+            document.getElementById('category-chips').style.display = 'flex';
+            videoSedangJalan = false;
+            ambilVideoBeranda();
         }
 
         window.tutupPemutar = () => {
-            const videoElement = document.getElementById('video-player-utama');
-            if(videoElement) { videoElement.pause(); videoElement.removeAttribute('src'); videoElement.load(); }
+            stopUpdateProgress();
+            if (ytPlayer && typeof ytPlayer.destroy === 'function') {
+                try { ytPlayer.destroy(); } catch(e) {}
+            }
+            ytPlayer = null;
+            ytReady = false;
+            document.getElementById('yt-target').innerHTML = '';
             document.getElementById('player-container').style.display = 'none';
+            videoSedangJalan = false;
             bukaBeranda();
         }
 
         window.bukaChannelDariVideo = () => {
+            stopUpdateProgress();
+            if (ytPlayer && typeof ytPlayer.destroy === 'function') {
+                try { ytPlayer.destroy(); } catch(e) {}
+            }
+            ytPlayer = null;
+            ytReady = false;
+            document.getElementById('yt-target').innerHTML = '';
             document.getElementById('player-container').style.display = 'none';
             document.getElementById('halaman-channel').style.display = 'block';
             document.getElementById('halaman-beranda').style.display = 'none';
             document.getElementById('search-header').style.display = 'none';
-            document.getElementById('category-chips').style.display = 'none';
-            const videoElement = document.getElementById('video-player-utama');
-            if(videoElement) { videoElement.pause(); }
             ambilDataChannel(currentChannelId, currentChannelName);
         }
 
@@ -669,8 +1154,7 @@
             document.getElementById('halaman-channel').style.display = 'none';
             document.getElementById('halaman-beranda').style.display = 'block';
             document.getElementById('search-header').style.display = 'flex';
-            document.getElementById('category-chips').style.display = 'flex';
-            ambilVideoBeranda(kategoriAktif);
+            ambilVideoBeranda();
         }
 
         async function ambilDataChannel(channelId, namaChannel) {
@@ -691,28 +1175,26 @@
                 }
 
                 querySnapshot.forEach((doc) => {
-                    try {
-                        const item = doc.data();
-                        const card = document.createElement('div');
-                        card.className = 'video-card';
-                        card.onclick = () => putarVideo(item.videoId, item.title, item.channel, item.channelId, item.views, item.publishedAt);
-                        
-                        card.innerHTML = `
-                            <img src="${item.thumbnail || ''}" loading="lazy">
-                            <div class="video-info">
-                                <h3 class="video-title">${item.title || 'Tanpa Judul'}</h3>
-                                <p class="channel-title">${item.channel || 'NontonYuk'}</p>
-                                <p class="meta-info">${buatMetaTeks(item.views, item.publishedAt)}</p>
-                            </div>
-                        `;
-                        container.appendChild(card);
-                    } catch(err) {}
+                    const item = doc.data();
+                    const card = document.createElement('div');
+                    card.className = 'video-card';
+                    card.onclick = () => putarVideo(item.videoId, item.title, item.channel, item.channelId);
+                    
+                    card.innerHTML = `
+                        <img src="${item.thumbnail || ''}" loading="lazy">
+                        <div class="video-info">
+                            <h3 class="video-title">${item.title || 'Tanpa Judul'}</h3>
+                            <p class="channel-title">${item.channel || 'NontonYuk'}</p>
+                        </div>
+                    `;
+                    container.appendChild(card);
                 });
             } catch(e) {
                 document.getElementById('channel-video-list').innerHTML = '<p style="text-align:center; grid-column: span 2; color:red;">Gagal memuat database.</p>';
             }
         }
 
+        // ===== INTERAKSI =====
         window.toggleLike = async () => {
             const btn = document.getElementById('btn-like');
             const docRef = doc(db, "saved_videos", `${uidAktif}_${currentVideoId}`);
@@ -799,6 +1281,7 @@
             } catch(e) {}
         }
 
+        // ===== AUTH =====
         onAuthStateChanged(auth, (user) => {
             document.getElementById('loading-auth').style.display = 'none';
             if (user) {
@@ -837,15 +1320,5 @@
             catch (error) { tampilkanPesan("Login Gagal: Email atau Password salah.", "Error"); }
         }
     </script>
-
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('service-worker.js')
-            .then(registration => console.log('SW registered!'))
-            .catch(err => console.log('SW failed: ', err));
-        });
-      }
-    </script>
 </body>
-  </html>
+    </html>
