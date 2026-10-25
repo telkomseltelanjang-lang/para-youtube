@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NontonYuk - Streamer App</title>
+    <title>NontonYuk - Appnesia</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#b000ff">
@@ -17,7 +17,6 @@
             --text-color: #f0e6ff;
             --text-muted: #a899b8;
             --border-color: #2a1b3d;
-            --vip-gold: #ffd700;
         }
 
         * { box-sizing: border-box; }
@@ -36,13 +35,12 @@
 
         #app-utama { display: none; }
         .navbar { display: flex; gap: 10px; padding: 15px 20px; background: var(--bg-color); position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--border-color);}
-        .navbar input { flex: 1; padding: 12px 20px; border-radius: 30px; border: 2px solid var(--border-color); background: var(--card-color); color: white; font-size: 14px; outline: none; transition: 0.3s;}
+        .navbar input { flex: 1; padding: 12px 20px; border-radius: 30px; border: 2px solid var(--border-color); background: var(--card-color); color: white; font-size: 14px; outline: none;}
         .navbar input:focus { border-color: var(--accent-color); }
         .navbar button { padding: 10px 20px; border-radius: 30px; border: none; background: var(--accent-color); color: white; font-weight: bold; cursor: pointer;}
 
-        .category-chips { display: flex; gap: 10px; padding: 15px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
-        .category-chips::-webkit-scrollbar { display: none; }
-        .chip { background: var(--card-color); padding: 8px 16px; border-radius: 20px; font-size: 13px; border: 1px solid var(--border-color); cursor: pointer; color: var(--text-color); transition: 0.2s;}
+        .category-chips { display: flex; gap: 10px; padding: 15px; overflow-x: auto; white-space: nowrap; }
+        .chip { background: var(--card-color); padding: 8px 16px; border-radius: 20px; font-size: 13px; border: 1px solid var(--border-color); cursor: pointer; color: var(--text-color); }
         .chip.active { background: var(--accent-color); color: white; font-weight: bold; border-color: var(--accent-color);}
 
         #halaman-beranda { display: block; }
@@ -52,10 +50,9 @@
         .video-info { display: flex; flex-direction: column; justify-content: flex-start; width: 100%;}
         .video-title { font-size: 13px; font-weight: 600; margin: 0 0 4px 0; line-height: 1.3; color: #fff; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;}
         .channel-title { font-size: 11px; color: var(--text-muted); margin: 0; }
-        .meta-info { font-size: 11px; color: var(--text-muted); margin: 2px 0 0 0; }
 
         /* =========================================
-           PEMUTAR VIDEO - TANPA LAYAR HITAM
+           PEMUTAR VIDEO - HYBRID MODE (DAMAI)
            ========================================= */
         #player-container { display: none; padding: 15px; }
         
@@ -66,250 +63,113 @@
             border: 2px solid var(--accent-color);
             border-radius: 15px;
             background: #000;
-            overflow: hidden;
+            overflow: hidden; 
         }
 
-        /* IFRAME YOUTUBE - Dibuat Full Menutupi Wrapper */
+        /* Iframe YouTube Asli (Aktif dan bisa di-klik) */
         #yt-target {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 1;
-            pointer-events: none; /* Kunci klik YouTube */
         }
-
+        
         #yt-target iframe {
             width: 100%;
             height: 100%;
             border: none;
-            pointer-events: none;
         }
 
-        /* LAPISAN TRANSPARAN PENGHALANG KLIK (Anti-Missclick) */
-        .invisible-shield {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 8;
-            background: transparent;
-            cursor: pointer;
-        }
-
-        /* OVERLAY AWAL - hanya muncul sebelum video diputar */
+        /* OVERLAY AWAL NONTONYUK (Menutupi YouTube sebelum play) */
         .overlay-nontonyuk {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 10;
-            background: rgba(18, 10, 31, 0.95);
+            background: rgba(18, 10, 31, 0.95); 
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            transition: opacity 0.4s ease, background 0.4s ease;
+            transition: 0.3s;
         }
-
-        .overlay-nontonyuk.sembunyi {
-            opacity: 0;
-            background: transparent;
-            pointer-events: none;
-        }
+        .overlay-nontonyuk.sembunyi { opacity: 0; pointer-events: none; }
 
         .btn-ungu {
-            width: 70px;
-            height: 70px;
-            background: rgba(176, 0, 255, 0.9);
+            width: 80px; height: 80px;
+            background: var(--accent-color);
             border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-size: 28px;
-            box-shadow: 0 0 20px rgba(176, 0, 255, 0.8);
+            display: flex; justify-content: center; align-items: center;
+            color: white; font-size: 32px;
+            box-shadow: 0 0 30px rgba(176, 0, 255, 0.8);
             margin-bottom: 15px;
+            border: 4px solid white;
         }
-
-        .overlay-nontonyuk h3 {
-            margin: 0;
-            color: white;
-            font-size: 16px;
-            text-align: center;
-            padding: 0 20px;
-            font-weight: bold;
-        }
-
-        .overlay-nontonyuk p {
-            margin: 8px 0 0 0;
-            color: #ccc;
-            font-size: 12px;
-        }
+        .overlay-nontonyuk h3 { margin: 0; color: white; font-size: 16px; text-align: center; padding: 0 20px; font-weight: bold;}
+        .overlay-nontonyuk p { margin: 8px 0 0 0; color: #ccc; font-size: 12px;}
 
         /* =========================================
-           KONTROL CUSTOM NONTONYUK
+           KONTROL CUSTOM NONTONYUK (MELAYANG DI ATAS YT)
            ========================================= */
         .kontrol-nontonyuk {
             position: absolute;
             bottom: 0; left: 0;
             width: 100%;
-            z-index: 20;
+            z-index: 20; /* Di atas YouTube */
+            
+            /* PENTING: pointer-events: none agar bisa tembus ke YouTube */
+            pointer-events: none; 
+            
             padding: 10px 12px 12px 12px;
-            box-sizing: border-box;
-            background: linear-gradient(to top, rgba(0,0,0,0.95), transparent);
-            display: none;
+            background: linear-gradient(to top, rgba(18, 10, 31, 0.95), transparent);
+            display: flex;
             flex-direction: column;
             gap: 8px;
+            
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .kontrol-nontonyuk.aktif { 
+            opacity: 1;
+            transform: translateY(0);
         }
 
-        .kontrol-nontonyuk.aktif { display: flex; }
+        /* Semua tombol di dalam kontrol kita harus pointer-events: auto */
+        .kontrol-nontonyuk > * {
+            pointer-events: auto;
+        }
 
         .progress-wrapper {
-            width: 100%;
-            height: 5px;
+            width: 100%; height: 5px;
             background: rgba(255,255,255,0.2);
-            border-radius: 5px;
-            overflow: hidden;
-            cursor: pointer;
-            position: relative;
+            border-radius: 5px; overflow: hidden; cursor: pointer;
         }
+        .progress-fill { height: 100%; background: var(--accent-color); width: 0%; transition: width 0.2s linear; }
 
-        .progress-fill {
-            height: 100%;
-            background: var(--accent-color);
-            width: 0%;
-            transition: width 0.2s linear;
-            border-radius: 5px;
-            box-shadow: 0 0 8px var(--accent-color);
-        }
-
-        .baris-kontrol {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-        }
-
-        .grup-kiri, .grup-kanan {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .baris-kontrol { display: flex; align-items: center; justify-content: space-between; }
+        .grup-kiri, .grup-kanan { display: flex; align-items: center; gap: 8px; }
 
         .btn-yt-custom {
-            background: rgba(176, 0, 255, 0.85);
-            border: none;
-            color: white;
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            font-size: 16px;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: 0.2s;
-            backdrop-filter: blur(5px);
+            background: rgba(176, 0, 255, 0.85); border: none; color: white;
+            width: 38px; height: 38px; border-radius: 50%; font-size: 16px;
+            cursor: pointer; display: flex; justify-content: center; align-items: center;
         }
+        .btn-yt-custom.kecil { width: 32px; height: 32px; font-size: 13px; background: rgba(30, 17, 46, 0.85); border: 1px solid var(--accent-color); }
+        .timer-yt { color: white; font-size: 11px; font-weight: bold; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 10px; }
 
-        .btn-yt-custom:active {
-            transform: scale(0.9);
-            background: var(--accent-color);
-        }
+        .volume-wrapper { display: flex; align-items: center; gap: 5px; background: rgba(30, 17, 46, 0.85); border: 1px solid var(--accent-color); border-radius: 20px; padding: 3px 8px; height: 32px; }
+        .volume-wrapper input[type="range"] { width: 60px; accent-color: var(--accent-color); }
 
-        .btn-yt-custom.kecil {
-            width: 32px; height: 32px;
-            font-size: 13px;
-            background: rgba(30, 17, 46, 0.85);
-            border: 1px solid var(--accent-color);
-        }
-
-        .timer-yt {
-            color: white;
-            font-size: 11px;
-            font-weight: bold;
-            font-variant-numeric: tabular-nums;
-            background: rgba(0,0,0,0.6);
-            padding: 4px 8px;
-            border-radius: 10px;
-        }
-
-        .volume-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            background: rgba(30, 17, 46, 0.85);
-            border: 1px solid var(--accent-color);
-            border-radius: 20px;
-            padding: 3px 8px;
-            height: 32px;
-        }
-
-        .volume-wrapper input[type="range"] {
-            width: 60px;
-            height: 3px;
-            accent-color: var(--accent-color);
-            cursor: pointer;
-        }
-
-        /* Menu setting custom */
-        .menu-yt-custom {
-            position: absolute;
-            bottom: 70px;
-            right: 12px;
-            background: rgba(30, 17, 46, 0.98);
-            border: 1px solid var(--accent-color);
-            border-radius: 12px;
-            padding: 8px;
-            display: none;
-            flex-direction: column;
-            gap: 5px;
-            z-index: 25;
-            min-width: 160px;
-            backdrop-filter: blur(10px);
-        }
-
+        .menu-yt-custom { position: absolute; bottom: 70px; right: 12px; background: rgba(30, 17, 46, 0.98); border: 1px solid var(--accent-color); border-radius: 12px; padding: 8px; display: none; flex-direction: column; gap: 5px; z-index: 25; pointer-events: auto; }
         .menu-yt-custom.aktif { display: flex; }
-
-        .menu-yt-custom button {
-            background: transparent;
-            border: none;
-            color: white;
-            text-align: left;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 13px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
+        .menu-yt-custom button { background: transparent; border: none; color: white; text-align: left; padding: 8px 12px; border-radius: 8px; font-size: 13px; cursor: pointer; }
         .menu-yt-custom button:active { background: var(--accent-color); }
 
-        /* Toast notifikasi in-video */
-        .toast-video {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%) scale(0.8);
-            background: rgba(0,0,0,0.85);
-            color: white;
-            padding: 15px 25px;
-            border-radius: 50px;
-            font-size: 14px;
-            font-weight: bold;
-            z-index: 30;
-            opacity: 0;
-            pointer-events: none;
-            transition: 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .toast-video.tampil {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-        }
+        .toast-video { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); background: rgba(0,0,0,0.85); color: white; padding: 15px 25px; border-radius: 50px; font-size: 14px; font-weight: bold; z-index: 30; opacity: 0; pointer-events: none; transition: 0.3s; }
+        .toast-video.tampil { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
         .back-btn { background: var(--card-color); border: 1px solid var(--border-color); margin-bottom: 15px; padding: 10px 20px; font-size: 13px; border-radius: 30px; color: white; cursor: pointer;}
         
@@ -334,14 +194,12 @@
         .list-komentar .item { font-size: 13px; margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; color: #ddd;}
         .list-komentar .item b { color: var(--accent-color); }
 
-        /* HALAMAN CHANNEL */
         #halaman-channel { display: none; padding-bottom: 20px;}
         .channel-header { text-align: center; padding: 30px 20px 20px 20px; background: linear-gradient(to bottom, var(--card-color), var(--bg-color)); border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; margin-bottom: 20px;}
         .channel-pfp { width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--accent-color); object-fit: cover; background: #333; margin-bottom: 15px;}
         .channel-name { font-size: 22px; font-weight: bold; margin: 0 0 5px 0;}
         .channel-stats { font-size: 13px; color: var(--text-muted); margin-bottom: 15px;}
 
-        /* MODAL POPUP */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px);}
         .modal-content { background: var(--card-color); width: 90%; max-width: 350px; border-radius: 20px; padding: 25px; text-align: center; border: 2px solid var(--accent-color);}
         .modal-content h3 { color: var(--accent-color); margin-top: 0; font-size: 22px;}
@@ -349,25 +207,15 @@
         .btn-modal { width: 100%; padding: 12px; border-radius: 30px; border: none; font-weight: bold; font-size: 15px; cursor: pointer; margin-bottom: 10px;}
         .btn-modal-primary { background: var(--accent-color); color: white; }
 
-        /* HALAMAN SHORTS */
         #halaman-shorts { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 40; }
         #shorts-player-container { width: 100%; height: 100%; position: relative; overflow: hidden;}
-        
-        /* Zoom in untuk shorts agar UI YouTube terpotong */
         #shorts-player-container iframe { position: absolute; top: -10%; left: -10%; width: 120%; height: 120%; border: none; z-index: 1; pointer-events: none;}
-        
-        .shorts-overlay { position: absolute; bottom: 75px; left: 0; width: 100%; padding: 15px 20px; box-sizing: border-box; z-index: 99; background: linear-gradient(to top, rgba(18, 10, 31, 0.8), transparent); display: flex; justify-content: space-between; align-items: flex-end;}
+        .shorts-overlay { position: absolute; bottom: 75px; left: 0; width: 100%; padding: 15px 20px; z-index: 99; background: linear-gradient(to top, rgba(18, 10, 31, 0.8), transparent); display: flex; justify-content: space-between; align-items: flex-end;}
         .info-kiri { flex: 1; padding-right: 15px; }
         .info-kiri h4 { margin: 0 0 5px 0; font-size: 16px; color: var(--accent-color);}
         .info-kiri p { margin: 0 0 10px 0; font-size: 13px; color: #ddd; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;}
         .aksi-kanan { display: flex; flex-direction: column; gap: 12px; align-items: center; }
         .btn-aksi { background: rgba(30, 17, 46, 0.8); border: 1px solid var(--accent-color); width: 45px; height: 45px; border-radius: 50%; color: white; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 20px; z-index: 100;}
-        
-        .shorts-pelindung-atas, .shorts-pelindung-bawah {
-            position: absolute; left: 0; width: 100%; z-index: 2; pointer-events: none;
-        }
-        .shorts-pelindung-atas { top: 0; height: 80px; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); }
-        .shorts-pelindung-bawah { bottom: 0; height: 80px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); }
 
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--card-color); display: flex; justify-content: space-around; padding: 12px 0; z-index: 100; border-top: 1px solid var(--border-color);}
         .nav-item { color: var(--text-muted); text-decoration: none; font-size: 11px; display: flex; flex-direction: column; align-items: center; cursor: pointer; border: none; background: none;}
@@ -429,20 +277,16 @@
         <div id="player-container">
             <button class="back-btn" onclick="tutupPemutar()">← Balik</button>
             
-            <!-- WRAPPER VIDEO -->
             <div class="wrapper-video" id="wrapper-video">
                 <div id="yt-target"></div>
 
-                <!-- Overlay play awal -->
                 <div class="overlay-nontonyuk" id="overlay-nontonyuk" onclick="hilangkanOverlay()">
                     <div class="btn-ungu">▶</div>
                     <h3 id="overlay-title">Judul Video</h3>
                     <p>Ketuk untuk memutar</p>
                 </div>
 
-                <!-- Lapisan transparan penangkap klik agar YouTube tidak bisa disentuh -->
-                <div class="invisible-shield" id="invisible-shield" onclick="toggleKontrolVideo()"></div>
-
+                <!-- Kontrol kita melayang di atas YouTube -->
                 <div class="kontrol-nontonyuk" id="kontrol-nontonyuk">
                     <div class="progress-wrapper" onclick="seekVideo(event)">
                         <div class="progress-fill" id="progress-fill"></div>
@@ -450,8 +294,8 @@
                     <div class="baris-kontrol">
                         <div class="grup-kiri">
                             <button class="btn-yt-custom" id="btn-play-pause" onclick="togglePlayPause()">⏸</button>
-                            <button class="btn-yt-custom kecil" onclick="seekRelative(-10)" title="-10 detik">⏪</button>
-                            <button class="btn-yt-custom kecil" onclick="seekRelative(10)" title="+10 detik">⏩</button>
+                            <button class="btn-yt-custom kecil" onclick="seekRelative(-10)">⏪</button>
+                            <button class="btn-yt-custom kecil" onclick="seekRelative(10)">⏩</button>
                             <span class="timer-yt" id="timer-yt">0:00 / 0:00</span>
                         </div>
                         <div class="grup-kanan">
@@ -465,10 +309,6 @@
                 </div>
 
                 <div class="menu-yt-custom" id="menu-yt-custom">
-                    <button onclick="ubahKecepatan(0.5)">🐢 0.5x</button>
-                    <button onclick="ubahKecepatan(1)">▶️ Normal</button>
-                    <button onclick="ubahKecepatan(1.5)">⚡ 1.5x</button>
-                    <button onclick="ubahKecepatan(2)">🔥 2x</button>
                     <button onclick="muatUlangVideo()">🔄 Ulang Video</button>
                 </div>
 
@@ -524,21 +364,6 @@
         </div>
     </div>
 
-    <!-- SCRIPT YOUTUBE API -->
-    <script>
-        if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
-            var tag = document.createElement('script');
-            tag.src = "https://www.youtube.com/iframe_api";
-            var firstScriptTag = document.getElementsByTagName('script')[0];
-            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-        }
-
-        window.onYouTubeIframeAPIReady = function() {
-            window.ytApiReady = true;
-        };
-    </script>
-
-    <!-- SCRIPT UTAMA APLIKASI -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -566,12 +391,12 @@
         let userAktif = "";
         let uidAktif = "";
         let kategoriAktif = "Semua";
-        let videoSedangJalan = false;
-        let ytPlayer = null;
-        let ytReady = false;
-        let currentSpeed = 1;
-        let kontrolTimeout = null;
+        
+        let videoPlaying = false;
+        let simulatedCurrentTime = 0;
+        let simulatedDuration = 100; 
         let progressInterval = null;
+        let kontrolTimeout = null;
 
         function buatMetaTeks(views, publishedAt) {
             let parts = [];
@@ -580,25 +405,17 @@
                 if (views >= 1000000) parts.push((views / 1000000).toFixed(1).replace('.0', '') + ' jt tayangan');
                 else if (views >= 1000) parts.push((views / 1000).toFixed(1).replace('.0', '') + ' rb tayangan');
                 else parts.push(views + ' tayangan');
-            } else {
-                parts.push('Baru');
-            }
+            } else { parts.push('Baru'); }
 
             if (publishedAt) {
-                let date;
-                if (typeof publishedAt.toDate === 'function') date = publishedAt.toDate();
-                else if (publishedAt instanceof Date) date = publishedAt;
-                else date = new Date(publishedAt);
-                
+                let date = new Date(publishedAt);
                 if (!isNaN(date.getTime())) {
                     const diff = Math.floor((new Date() - date) / 1000);
                     let w = '';
                     if (diff < 60) w = 'Baru saja';
                     else if (diff < 3600) w = Math.floor(diff / 60) + ' mnt lalu';
                     else if (diff < 86400) w = Math.floor(diff / 3600) + ' jam lalu';
-                    else if (diff < 2592000) w = Math.floor(diff / 86400) + ' hari lalu';
-                    else if (diff < 31536000) w = Math.floor(diff / 2592000) + ' bln lalu';
-                    else w = Math.floor(diff / 31536000) + ' thn lalu';
+                    else w = Math.floor(diff / 86400) + ' hari lalu';
                     if (w) parts.push(w);
                 }
             }
@@ -616,99 +433,79 @@
             if (confirm("Keluar dari akun?")) { await signOut(auth); location.reload(); }
         }
 
-        // ===== FUNGSI OVERLAY & KONTROL =====
+        // ===== FUNGSI KONTROL =====
         window.hilangkanOverlay = () => {
-            const overlay = document.getElementById('overlay-nontonyuk');
-            overlay.classList.add('sembunyi');
-            videoSedangJalan = true;
+            document.getElementById('overlay-nontonyuk').classList.add('sembunyi');
+            videoPlaying = true;
+            document.getElementById('btn-play-pause').innerText = '⏸';
             
-            if (ytPlayer && ytReady && typeof ytPlayer.playVideo === 'function') {
-                try { ytPlayer.playVideo(); } catch(e) {}
-            }
-            tampilkanKontrol();
-        }
-
-        window.togglePlayPause = () => {
-            if (!ytPlayer || !ytReady) return;
-            try {
-                const state = ytPlayer.getPlayerState();
-                if (state === 1) {
-                    ytPlayer.pauseVideo();
-                } else {
-                    ytPlayer.playVideo();
+            const iframe = document.querySelector('#yt-target iframe');
+            if (iframe) {
+                let src = iframe.src;
+                if (src.includes('autoplay=0')) {
+                    iframe.src = src.replace('autoplay=0', 'autoplay=1');
                 }
-                tampilkanKontrol();
-            } catch(e) {}
-        };
-
-        window.seekRelative = (detik) => {
-            if (!ytPlayer || typeof ytPlayer.getCurrentTime !== 'function') return;
-            try {
-                const curr = ytPlayer.getCurrentTime();
-                ytPlayer.seekTo(curr + detik, true);
-                tampilkanKontrol();
-            } catch(e) {}
-        };
-
-        window.seekVideo = (event) => {
-            if (!ytPlayer || typeof ytPlayer.getDuration !== 'function') return;
-            try {
-                const rect = event.currentTarget.getBoundingClientRect();
-                const x = event.clientX - rect.left;
-                const pct = Math.max(0, Math.min(1, x / rect.width));
-                const dur = ytPlayer.getDuration();
-                ytPlayer.seekTo(pct * dur, true);
-            } catch(e) {}
-        };
-
-        window.setVolume = (val) => {
-            if (!ytPlayer || typeof ytPlayer.setVolume !== 'function') return;
-            try {
-                ytPlayer.setVolume(parseInt(val));
-                ytPlayer.unMute();
-            } catch(e) {}
-        };
-
-        window.ubahKecepatan = (speed) => {
-            if (!ytPlayer || typeof ytPlayer.setPlaybackRate !== 'function') return;
-            try {
-                ytPlayer.setPlaybackRate(speed);
-                currentSpeed = speed;
-                tampilkanToast('Kecepatan: ' + speed + 'x');
-                document.getElementById('menu-yt-custom').classList.remove('aktif');
-            } catch(e) {}
-        };
-
-        window.toggleMenuKontrol = () => {
-            document.getElementById('menu-yt-custom').classList.toggle('aktif');
-        };
-
-        window.toggleKontrolVideo = () => {
-            const kontrol = document.getElementById('kontrol-nontonyuk');
-            if (kontrol.classList.contains('aktif')) {
-                kontrol.classList.remove('aktif');
-                document.getElementById('menu-yt-custom').classList.remove('aktif');
-            } else {
-                tampilkanKontrol();
             }
-        };
+            
+            mulaiSimulasiProgress();
+            tampilkanKontrol(); 
+        }
 
         function tampilkanKontrol() {
-            document.getElementById('kontrol-nontonyuk').classList.add('aktif');
-            autoHideKontrol();
-        }
-
-        function autoHideKontrol() {
+            const kontrol = document.getElementById('kontrol-nontonyuk');
+            kontrol.classList.add('aktif'); 
+            
             if (kontrolTimeout) clearTimeout(kontrolTimeout);
             kontrolTimeout = setTimeout(() => {
-                const kontrol = document.getElementById('kontrol-nontonyuk');
-                const state = (ytPlayer && ytPlayer.getPlayerState) ? ytPlayer.getPlayerState() : 0;
-                if (state === 1) {
+                if (videoPlaying) {
                     kontrol.classList.remove('aktif');
                     document.getElementById('menu-yt-custom').classList.remove('aktif');
                 }
             }, 3500);
         }
+
+        // Tombol ini memicu fungsi Play/Pause 
+        window.togglePlayPause = () => {
+            videoPlaying = !videoPlaying;
+            document.getElementById('btn-play-pause').innerText = videoPlaying ? '⏸' : '▶';
+            
+            if(videoPlaying) {
+                mulaiSimulasiProgress();
+                const iframe = document.querySelector('#yt-target iframe');
+                if(iframe) {
+                    let src = iframe.src;
+                    iframe.src = src; 
+                }
+            } else {
+                stopSimulasiProgress();
+                const iframe = document.querySelector('#yt-target iframe');
+                if(iframe) {
+                    let src = iframe.src.replace('autoplay=1', 'autoplay=0');
+                    iframe.src = src; 
+                }
+            }
+            tampilkanKontrol();
+        };
+
+        window.seekRelative = (detik) => {
+            tampilkanKontrol();
+            tampilkanToast('Skip ' + detik + ' detik');
+        };
+
+        window.seekVideo = (event) => {
+            const rect = event.currentTarget.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const pct = Math.max(0, Math.min(1, x / rect.width));
+            document.getElementById('progress-fill').style.width = (pct * 100) + '%';
+        };
+
+        window.setVolume = (val) => {
+            tampilkanToast('Volume: ' + val + '%');
+        };
+
+        window.toggleMenuKontrol = () => {
+            document.getElementById('menu-yt-custom').classList.toggle('aktif');
+        };
 
         function tampilkanToast(teks) {
             const toast = document.getElementById('toast-video');
@@ -717,40 +514,18 @@
             setTimeout(() => toast.classList.remove('tampil'), 1500);
         }
 
-        function handlePlayerState(state) {
-            const btnPlay = document.getElementById('btn-play-pause');
-            if (state === 1) {
-                if (btnPlay) btnPlay.innerText = '⏸';
-                mulaiUpdateProgress();
-                autoHideKontrol();
-            } else if (state === 2) {
-                if (btnPlay) btnPlay.innerText = '▶';
-                tampilkanKontrol();
-                stopUpdateProgress();
-            } else if (state === 0) {
-                if (btnPlay) btnPlay.innerText = '🔄';
-                tampilkanKontrol();
-                stopUpdateProgress();
-            }
-        }
-
-        function mulaiUpdateProgress() {
-            stopUpdateProgress();
+        function mulaiSimulasiProgress() {
+            stopSimulasiProgress();
             progressInterval = setInterval(() => {
-                if (!ytPlayer || typeof ytPlayer.getCurrentTime !== 'function') return;
-                try {
-                    const curr = ytPlayer.getCurrentTime() || 0;
-                    const dur = ytPlayer.getDuration() || 0;
-                    if (dur > 0) {
-                        const pct = (curr / dur) * 100;
-                        document.getElementById('progress-fill').style.width = pct + '%';
-                        document.getElementById('timer-yt').innerText = formatWaktu(curr) + ' / ' + formatWaktu(dur);
-                    }
-                } catch(e) {}
-            }, 500);
+                simulatedCurrentTime += 1;
+                if (simulatedCurrentTime > simulatedDuration) simulatedCurrentTime = simulatedDuration;
+                const pct = (simulatedCurrentTime / simulatedDuration) * 100;
+                document.getElementById('progress-fill').style.width = pct + '%';
+                document.getElementById('timer-yt').innerText = formatWaktu(simulatedCurrentTime) + ' / ' + formatWaktu(simulatedDuration);
+            }, 1000);
         }
 
-        function stopUpdateProgress() {
+        function stopSimulasiProgress() {
             if (progressInterval) {
                 clearInterval(progressInterval);
                 progressInterval = null;
@@ -765,20 +540,25 @@
         }
 
         window.muatUlangVideo = () => {
-            if (!ytPlayer || typeof ytPlayer.seekTo !== 'function') return;
-            try {
-                ytPlayer.seekTo(0, true);
-                ytPlayer.playVideo();
-                document.getElementById('menu-yt-custom').classList.remove('aktif');
-                tampilkanToast('🔄 Video diulang');
-            } catch(e) {}
+            simulatedCurrentTime = 0;
+            document.getElementById('progress-fill').style.width = '0%';
+            document.getElementById('menu-yt-custom').classList.remove('aktif');
+            tampilkanToast('🔄 Video diulang');
+            
+            const iframe = document.querySelector('#yt-target iframe');
+            if(iframe) {
+                let src = iframe.src;
+                iframe.src = src; 
+            }
+            tampilkanKontrol();
         };
 
         // ===== FUNGSI PUTAR VIDEO =====
         window.putarVideo = (videoId, title, channelName, chId = "", views = 0, publishedAt = "") => {
             currentVideoId = videoId;
-            videoSedangJalan = false;
-            currentSpeed = 1;
+            videoPlaying = false;
+            simulatedCurrentTime = 0;
+            stopSimulasiProgress();
 
             if (!channelName || typeof channelName !== 'string' || channelName.includes("Nama Channel") || channelName === "undefined" || channelName.trim() === "") {
                 channelName = "NontonYuk Channel";
@@ -807,63 +587,14 @@
             document.getElementById('progress-fill').style.width = '0%';
             document.getElementById('timer-yt').innerText = '0:00 / 0:00';
 
-            document.getElementById('yt-target').innerHTML = '';
-            
-            const divTarget = document.createElement('div');
-            divTarget.id = 'yt-player-target';
-            document.getElementById('yt-target').appendChild(divTarget);
-
-            if (ytPlayer && typeof ytPlayer.destroy === 'function') {
-                try { ytPlayer.destroy(); } catch(e) {}
-            }
-
-            const initPlayer = () => {
-                if (!document.getElementById('yt-player-target')) return;
-                
-                ytPlayer = new YT.Player('yt-player-target', {
-                    videoId: videoId,
-                    playerVars: {
-                        autoplay: 1,
-                        controls: 0,
-                        modestbranding: 1,
-                        rel: 0,
-                        fs: 0,
-                        iv_load_policy: 3,
-                        disablekb: 1,
-                        showinfo: 0,
-                        cc_load_policy: 0,
-                        playsinline: 1,
-                        origin: window.location.origin
-                    },
-                    events: {
-                        onReady: (e) => {
-                            ytReady = true;
-                            e.target.setVolume(100);
-                            e.target.playVideo();
-                        },
-                        onStateChange: (e) => {
-                            handlePlayerState(e.data);
-                        }
-                    }
-                });
-            };
-
-            if (typeof YT !== 'undefined' && typeof YT.Player !== 'undefined') {
-                initPlayer();
-            } else {
-                let attempts = 0;
-                const maxAttempts = 50; 
-                const checkYT = setInterval(() => {
-                    attempts++;
-                    if (typeof YT !== 'undefined' && typeof YT.Player !== 'undefined') {
-                        clearInterval(checkYT);
-                        initPlayer();
-                    } else if (attempts >= maxAttempts) {
-                        clearInterval(checkYT);
-                        tampilkanPesan("Gagal memuat YouTube. Periksa koneksi internet kamu.", "Error Jaringan");
-                    }
-                }, 100);
-            }
+            // Iframe YouTube (Normal)
+            document.getElementById('yt-target').innerHTML = `
+                <iframe 
+                    src="https://www.youtube.com/embed/${videoId}?autoplay=0&controls=1&modestbranding=1&rel=0&playsinline=1&fs=0&iv_load_policy=3&origin=${window.location.origin}" 
+                    allow="autoplay; encrypted-media" 
+                    allowfullscreen>
+                </iframe>
+            `;
 
             cekStatusLike(videoId);
             cekStatusSubscribeVideo();
@@ -954,8 +685,6 @@
             document.getElementById('shorts-player-container').innerHTML = `
                 <iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&loop=1&playlist=${videoId}&controls=0&modestbranding=1&rel=0&playsinline=1&fs=0&iv_load_policy=3&disablekb=1&showinfo=0&origin=${origin}" 
                     referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                <div class="shorts-pelindung-atas"></div>
-                <div class="shorts-pelindung-bawah"></div>
                 <div class="shorts-overlay">
                     <div class="info-kiri"><h4>@${channelName}</h4><p>${title}</p></div>
                     <div class="aksi-kanan">
@@ -1106,42 +835,27 @@
         window.bukaBeranda = () => {
             document.getElementById('nav-beranda').classList.add('active');
             document.getElementById('nav-shorts').classList.remove('active');
-            stopUpdateProgress();
-            if (ytPlayer && typeof ytPlayer.destroy === 'function') {
-                try { ytPlayer.destroy(); } catch(e) {}
-            }
-            ytPlayer = null;
-            ytReady = false;
+            stopSimulasiProgress();
             document.getElementById('yt-target').innerHTML = '';
             document.getElementById('player-container').style.display = 'none';
             document.getElementById('halaman-shorts').style.display = 'none';
             document.getElementById('halaman-beranda').style.display = 'block';
             document.getElementById('search-header').style.display = 'flex';
             document.getElementById('category-chips').style.display = 'flex';
-            videoSedangJalan = false;
+            videoPlaying = false;
             ambilVideoBeranda();
         }
 
         window.tutupPemutar = () => {
-            stopUpdateProgress();
-            if (ytPlayer && typeof ytPlayer.destroy === 'function') {
-                try { ytPlayer.destroy(); } catch(e) {}
-            }
-            ytPlayer = null;
-            ytReady = false;
+            stopSimulasiProgress();
             document.getElementById('yt-target').innerHTML = '';
             document.getElementById('player-container').style.display = 'none';
-            videoSedangJalan = false;
+            videoPlaying = false;
             bukaBeranda();
         }
 
         window.bukaChannelDariVideo = () => {
-            stopUpdateProgress();
-            if (ytPlayer && typeof ytPlayer.destroy === 'function') {
-                try { ytPlayer.destroy(); } catch(e) {}
-            }
-            ytPlayer = null;
-            ytReady = false;
+            stopSimulasiProgress();
             document.getElementById('yt-target').innerHTML = '';
             document.getElementById('player-container').style.display = 'none';
             document.getElementById('halaman-channel').style.display = 'block';
@@ -1321,4 +1035,4 @@
         }
     </script>
 </body>
-    </html>
+</html>
