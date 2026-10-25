@@ -1,0 +1,8 @@
+version: 1
+type: web
+build:
+  framework: node
+  install: npm ci
+run:
+  command: node server.js
+  port: 3000
