@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NontonYuk - Streamer App</title>
+    
+    <!-- PWA TAGS -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#b000ff">
+    <link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=NontonYuk&background=b000ff&color=fff&size=192&rounded=true">
+
+    <style>
+        :root {
+            --bg-color: #120a1f; 
+            --card-color: #1e112e;
+            --accent-color: #b000ff; 
+            --text-color: #f0e6ff;
+            --text-muted: #a899b8;
+            --border-color: #2a1b3d;
+            --vip-gold: #ffd700;
+        }
+
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 0; padding-bottom: 70px; overflow-x: hidden;}
+
+        /* HALAMAN LOGIN */
+        #halaman-auth { display: none; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; position: fixed; top:0; left:0; width: 100%; background: var(--bg-color); z-index: 999;}
+        .auth-box { background: var(--card-color); padding: 30px 20px; border-radius: 20px; width: 100%; max-width: 400px; border: 1px solid var(--border-color);}
+        .auth-box h2 { text-align: center; color: var(--accent-color); margin-top: 0; margin-bottom: 20px;}
+        .auth-box input { width: 100%; padding: 12px 15px; margin-bottom: 15px; border-radius: 10px; border: 1px solid var(--border-color); background: #120a1f; color: white; outline: none;}
+        .auth-box button { width: 100%; padding: 12px; border-radius: 10px; border: none; background: var(--accent-color); color: white; font-weight: bold; font-size: 16px; cursor: pointer; margin-bottom: 10px;}
+        .auth-switch { text-align: center; font-size: 13px; color: var(--text-muted); }
+        .auth-switch a { color: var(--accent-color); text-decoration: none; font-weight: bold; cursor: pointer;}
+
+        #loading-auth { text-align: center; color: var(--accent-color); font-size: 18px; font-weight: bold; margin-top: 50vh; }
+
+        #app-utama { display: none; }
+        .navbar { display: flex; gap: 10px; padding: 15px 20px; background: var(--bg-color); position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--border-color);}
+        .navbar input { flex: 1; padding: 12px 20px; border-radius: 30px; border: 2px solid var(--border-color); background: var(--card-color); color: white; font-size: 14px; outline: none; transition: 0.3s;}
+        .navbar input:focus { border-color: var(--accent-color); }
+        .navbar button { padding: 10px 20px; border-radius: 30px; border: none; background: var(--accent-color); color: white; font-weight: bold; cursor: pointer;}
+
+        .category-chips { display: flex; gap: 10px; padding: 15px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+        .category-chips::-webkit-scrollbar { display: none; }
+        .chip { background: var(--card-color); padding: 8px 16px; border-radius: 20px; font-size: 13px; border: 1px solid var(--border-color); cursor: pointer; color: var(--text-color); transition: 0.2s;}
+        .chip.active { background: var(--accent-color); color: white; font-weight: bold; border-color: var(--accent-color);}
+
+        #halaman-beranda { display: block; }
+        .video-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px 10px; padding: 0 15px 20px 15px; align-items: start; }
+        .video-card { background: transparent; cursor: pointer; display: flex; flex-direction: column; gap: 8px; width: 100%;}
+        .video-card img { width: 100%; height: 100px; aspect-ratio: 16/9; border-radius: 12px; object-fit: cover; background: #000; border: 1px solid var(--border-color);}
+        .video-info { display: flex; flex-direction: column; justify-content: flex-start; width: 100%;}
+        .video-title { font-size: 13px; font-weight: 600; margin: 0 0 4px 0; line-height: 1.3; color: #fff; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;}
+        .channel-title { font-size: 11px; color: var(--text-muted); margin: 0; }
+        .meta-info { font-size: 11px; color: var(--text-muted); margin: 2px 0 0 0; }
+
+        /* =========================================
+           PEMUTAR VIDEO HTML5 (STREAMING LANGSUNG)
+           ========================================= */
+        #player-container { display: none; padding: 15px; }
+        
+        .wrapper-iframe-kustom {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/9;
+            border: 2px solid var(--accent-color);
+            border-radius: 15px;
+            background: #000;
+            overflow: hidden; 
+        }
+
+        .wrapper-iframe-kustom video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #000;
+            display: block;
+        }
+
+        .back-btn { background: var(--card-color); border: 1px solid var(--border-color); margin-bottom: 15px; padding: 10px 20px; font-size: 13px; border-radius: 30px; color: white; cursor: pointer;}
+        
+        /* UI NONTONYUK */
+        .judul-video { font-size: 18px; font-weight: bold; margin: 15px 0 5px 0; color: var(--text-color); }
+        .video-meta-player { font-size: 12px; color: var(--text-muted); margin-bottom: 15px; }
+        .channel-info-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding: 5px 0;}
+        .channel-info-left { display: flex; align-items: center; gap: 10px; cursor: pointer;}
+        .channel-info-left img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--accent-color); object-fit: cover;}
+        .channel-info-left span { font-size: 14px; font-weight: bold; color: var(--accent-color);}
+        .btn-sub-video { padding: 6px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; border: none; cursor: pointer;}
+        .btn-sub-video.not-subbed { background: var(--accent-color); color: white; }
+        .btn-sub-video.subbed { background: #333; color: #aaa; border: 1px solid #555;}
+
+        .interaksi-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+        .btn-interaksi { background: var(--card-color); border-radius: 30px; padding: 10px 20px; font-size: 13px; border: 1px solid var(--border-color); color: white; cursor: pointer; display: flex; align-items: center; gap: 5px;}
+        .btn-interaksi.liked { background: var(--accent-color); border-color: var(--accent-color);}
+
+        .komentar-section { background: var(--card-color); border: 1px solid var(--border-color); padding: 15px; border-radius: 15px; margin-bottom: 20px;}
+        .input-komentar { display: flex; gap: 10px; margin-bottom: 15px;}
+        .input-komentar input { flex: 1; background: #120a1f; border: 1px solid var(--border-color); border-radius: 20px; color: white; padding: 10px 15px; outline: none;}
+        .input-komentar button { background: var(--accent-color); color: white; border: none; padding: 10px 20px; font-size: 13px; border-radius: 20px; cursor: pointer; font-weight: bold;}
+        .list-komentar .item { font-size: 13px; margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; color: #ddd;}
+        .list-komentar .item b { color: var(--accent-color); }
+
+        /* HALAMAN CHANNEL */
+        #halaman-channel { display: none; padding-bottom: 20px;}
+        .channel-header { text-align: center; padding: 30px 20px 20px 20px; background: linear-gradient(to bottom, var(--card-color), var(--bg-color)); border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; margin-bottom: 20px;}
+        .channel-pfp { width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--accent-color); object-fit: cover; background: #333; margin-bottom: 15px;}
+        .channel-name { font-size: 22px; font-weight: bold; margin: 0 0 5px 0;}
+        .channel-stats { font-size: 13px; color: var(--text-muted); margin-bottom: 15px;}
+
+        /* MODAL POPUP */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px);}
+        .modal-content { background: var(--card-color); width: 90%; max-width: 350px; border-radius: 20px; padding: 25px; text-align: center; border: 2px solid var(--accent-color);}
+        .modal-content h3 { color: var(--accent-color); margin-top: 0; font-size: 22px;}
+        .modal-content p { font-size: 14px; color: var(--text-color); margin-bottom: 20px; line-height: 1.5;}
+        .btn-modal { width: 100%; padding: 12px; border-radius: 30px; border: none; font-weight: bold; font-size: 15px; cursor: pointer; margin-bottom: 10px;}
+        .btn-modal-primary { background: var(--accent-color); color: white; }
+
+        /* HALAMAN SHORTS */
+        #halaman-shorts { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 40; }
+        #shorts-player-container { width: 100%; height: 100%; position: relative; overflow: hidden;}
+        
+        #shorts-player-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; z-index: 1; transform: scale(1.35); }
+        
+        .shorts-overlay { position: absolute; bottom: 75px; left: 0; width: 100%; padding: 15px 20px; box-sizing: border-box; z-index: 99; background: linear-gradient(to top, rgba(18, 10, 31, 0.8), transparent); display: flex; justify-content: space-between; align-items: flex-end;}
+        .info-kiri { flex: 1; padding-right: 15px; }
+        .info-kiri h4 { margin: 0 0 5px 0; font-size: 16px; color: var(--accent-color);}
+        .info-kiri p { margin: 0 0 10px 0; font-size: 13px; color: #ddd; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;}
+        .aksi-kanan { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+        .btn-aksi { background: rgba(30, 17, 46, 0.8); border: 1px solid var(--accent-color); width: 45px; height: 45px; border-radius: 50%; color: white; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 20px; z-index: 100;}
+
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--card-color); display: flex; justify-content: space-around; padding: 12px 0; z-index: 100; border-top: 1px solid var(--border-color);}
+        .nav-item { color: var(--text-muted); text-decoration: none; font-size: 11px; display: flex; flex-direction: column; align-items: center; cursor: pointer; border: none; background: none;}
+        .nav-item.active { color: var(--accent-color); font-weight: bold; }
+        .nav-item span { font-size: 22px; margin-bottom: 5px;}
+    </style>
+</head>
+<body>
+
+    <div id="loading-auth">Menghubungkan ke Server...</div>
+
+    <div class="modal-overlay" id="popup-kustom">
+        <div class="modal-content">
+            <h3 id="popup-title">Informasi</h3>
+            <p id="popup-message">Pesan...</p>
+            <button class="btn-modal btn-modal-primary" onclick="tutupPopup()">OK</button>
+        </div>
+    </div>
+
+    <div id="halaman-auth">
+        <div class="auth-box">
+            <div id="form-login">
+                <h2>Masuk ke NontonYuk</h2>
+                <input type="email" id="login-email" placeholder="Email">
+                <input type="password" id="login-password" placeholder="Password">
+                <button onclick="prosesLogin()">Masuk</button>
+                <div class="auth-switch">Belum punya akun? <a onclick="tampilkanDaftar()">Daftar di sini</a></div>
+            </div>
+            <div id="form-daftar" style="display:none;">
+                <h2>Buat Akun Baru</h2>
+                <input type="text" id="daftar-nama" placeholder="Nama Pengguna">
+                <input type="email" id="daftar-email" placeholder="Email">
+                <input type="password" id="daftar-password" placeholder="Password (min. 6 karakter)">
+                <button onclick="prosesDaftar()">Daftar Sekarang</button>
+                <div class="auth-switch">Sudah punya akun? <a onclick="tampilkanLogin()">Masuk di sini</a></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-utama">
+        <div class="navbar" id="search-header">
+            <input type="text" id="search-input" placeholder="Cari sesuatu yang seru...">
+            <button onclick="cariVideo()">🔍</button>
+            <button onclick="konfirmasiLogout()" style="background:#333; padding:10px; border-radius:50%;">🚪</button>
+        </div>
+
+        <div class="category-chips" id="category-chips">
+            <div class="chip active" onclick="filterKategori('Semua', this)">Semua</div>
+            <div class="chip" onclick="filterKategori('Musik', this)">Musik</div>
+            <div class="chip" onclick="filterKategori('Game', this)">Game</div>
+            <div class="chip" onclick="filterKategori('Film', this)">Film</div>
+        </div>
+
+        <div id="halaman-beranda">
+            <div class="title-section" id="judul-halaman" style="margin-top: 15px;">🔥 Database NontonYuk</div>
+            <div class="video-grid" id="video-list"></div>
+        </div>
+
+        <div id="player-container">
+            <button class="back-btn" onclick="tutupPemutar()">← Balik</button>
+            
+            <div class="wrapper-iframe-kustom">
+                <!-- PEMUTAR VIDEO ASLI KITA (HTML5) -->
+                <video id="video-player-utama" controls playsinline poster=""></video>
+            </div>
+            
+            <div class="judul-video" id="judul-video-putar"></div>
+            <div class="video-meta-player" id="meta-video-putar"></div>
+            
+            <div class="channel-info-bar">
+                <div class="channel-info-left" onclick="bukaChannelDariVideo()">
+                    <img src="" id="video-channel-pfp" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=NontonYuk&background=1e112e&color=b000ff&rounded=true&bold=true';">
+                    <span id="video-channel-name">Memuat...</span>
+                </div>
+                <button class="btn-sub-video not-subbed" id="btn-sub-video" onclick="toggleSubscribeVideo()">Subscribe</button>
+            </div>
+
+            <div class="interaksi-bar">
+                <button class="btn-interaksi" id="btn-like" onclick="toggleLike()">🤍 Simpan</button>
+                <button class="btn-interaksi" onclick="bagikanVideo()">↗️ Bagikan</button>
+            </div>
+
+            <div class="komentar-section">
+                <h4>Komentar (<span id="jumlah-komentar">0</span>)</h4>
+                <div class="input-komentar">
+                    <input type="text" id="komentar-input" placeholder="Tulis pendapatmu...">
+                    <button onclick="kirimKomentar()">Kirim</button>
+                </div>
+                <div class="list-komentar" id="list-komentar"></div>
+            </div>
+
+            <div class="title-section" style="margin-top: 25px;">Video Rekomendasi</div>
+            <div class="video-grid" id="video-rekomendasi"></div>
+        </div>
+
+        <div id="halaman-channel">
+            <button class="back-btn" onclick="kembaliDariChannel()">← Balik</button>
+            <div class="channel-header">
+                <img src="" id="channel-pfp" class="channel-pfp" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=NontonYuk&background=1e112e&color=b000ff&rounded=true&bold=true';">
+                <h2 class="channel-name" id="channel-name">Memuat...</h2>
+                <div class="channel-stats" id="channel-stats">Data dari NontonYuk</div>
+            </div>
+            <div class="video-grid" id="channel-video-list"></div>
+        </div>
+
+        <div id="halaman-shorts">
+            <div id="shorts-player-container" style="width:100%; height:100%;"></div>
+        </div>
+
+        <div class="bottom-nav">
+            <button class="nav-item active" id="nav-beranda" onclick="bukaBeranda()"><span>🏠</span>Home</button>
+            <button class="nav-item" id="nav-shorts" onclick="bukaShorts()"><span>⚡</span>Shorts</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, deleteDoc, getDoc, collection, addDoc, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAauZE_mCms_VxW9KNV3BU9hRW-bf4xDJw",
+            authDomain: "gen-lang-client-0106206984.firebaseapp.com",
+            projectId: "gen-lang-client-0106206984",
+            storageBucket: "gen-lang-client-0106206984.firebasestorage.app",
+            messagingSenderId: "65696246176",
+            appId: "1:65696246176:web:09aef1293bba82656e1cc5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const YOUTUBE_API_KEY = 'AIzaSyDTFnT4l7qMJ6fk4SKKjo8m3DDSFE6yhK4'; 
+        
+        // =========================================
+        // GANTI URL INI DENGAN LINK PXXL KAMU
+        // =========================================
+        const BACKEND_URL = 'https://nontonyuk.pxxlspace.cv'; 
+
+        let currentVideoId = "";
+        let currentShortsId = "";
+        let currentChannelName = "";
+        let currentChannelId = "";
+        let userAktif = "";
+        let uidAktif = "";
+        let kategoriAktif = "Semua";
+
+        function buatMetaTeks(views, publishedAt) {
+            let parts = [];
+            if (views && !isNaN(views) && views > 0) {
+                views = parseInt(views);
+                if (views >= 1000000) parts.push((views / 1000000).toFixed(1).replace('.0', '') + ' jt tayangan');
+                else if (views >= 1000) parts.push((views / 1000).toFixed(1).replace('.0', '') + ' rb tayangan');
+                else parts.push(views + ' tayangan');
+            } else {
+                parts.push('Baru');
+            }
+
+            if (publishedAt) {
+                let date;
+                if (typeof publishedAt.toDate === 'function') date = publishedAt.toDate();
+                else if (publishedAt instanceof Date) date = publishedAt;
+                else date = new Date(publishedAt);
+                
+                if (!isNaN(date.getTime())) {
+                    const diff = Math.floor((new Date() - date) / 1000);
+                    let w = '';
+                    if (diff < 60) w = 'Baru saja';
+                    else if (diff < 3600) w = Math.floor(diff / 60) + ' mnt lalu';
+                    else if (diff < 86400) w = Math.floor(diff / 3600) + ' jam lalu';
+                    else if (diff < 2592000) w = Math.floor(diff / 86400) + ' hari lalu';
+                    else if (diff < 31536000) w = Math.floor(diff / 2592000) + ' bln lalu';
+                    else w = Math.floor(diff / 31536000) + ' thn lalu';
+                    if (w) parts.push(w);
+                }
+            }
+            return parts.join(' • ');
+        }
+
+        window.tampilkanPesan = (pesan, judul = "Informasi") => {
+            document.getElementById('popup-title').innerText = judul;
+            document.getElementById('popup-message').innerText = pesan;
+            document.getElementById('popup-kustom').style.display = 'flex';
+        }
+        window.tutupPopup = () => { document.getElementById('popup-kustom').style.display = 'none'; }
+
+        window.konfirmasiLogout = () => {
+            const popup = document.getElementById('popup-kustom');
+            const content = popup.querySelector('.modal-content');
+            const originalHTML = content.innerHTML; 
+            content.innerHTML = `
+                <h3 id="popup-title" style="color:var(--accent-color);">Keluar Akun</h3>
+                <p id="popup-message">Apakah Anda yakin ingin keluar dari akun?</p>
+                <button class="btn-modal btn-modal-primary" id="btn-konfirmasi-ya">Ya, Keluar</button>
+                <button class="btn-modal" style="background:#333; color:white;" id="btn-konfirmasi-batal">Batal</button>
+            `;
+            popup.style.display = 'flex';
+            document.getElementById('btn-konfirmasi-ya').onclick = async () => { await signOut(auth); location.reload(); };
+            document.getElementById('btn-konfirmasi-batal').onclick = () => { popup.style.display = 'none'; content.innerHTML = originalHTML; };
+        }
+
+        // =========================================
+        // FUNGSI UTAMA PUTAR VIDEO (STREAMING LANGSUNG)
+        // =========================================
+        window.putarVideo = async (videoId, title, channelName, chId = "", views = 0, publishedAt = "") => {
+            currentVideoId = videoId;
+            
+            if (!channelName || typeof channelName !== 'string' || channelName.includes("Nama Channel") || channelName === "undefined" || channelName.trim() === "") {
+                channelName = "NontonYuk Channel";
+            }
+            currentChannelName = channelName;
+            currentChannelId = chId;
+
+            document.getElementById('judul-video-putar').innerText = title || "Video NontonYuk";
+            document.getElementById('video-channel-name').innerText = currentChannelName;
+            document.getElementById('video-channel-pfp').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentChannelName)}&background=1e112e&color=b000ff&rounded=true&bold=true`;
+            document.getElementById('meta-video-putar').innerText = buatMetaTeks(views, publishedAt);
+
+            document.getElementById('halaman-beranda').style.display = 'none';
+            document.getElementById('halaman-channel').style.display = 'none';
+            document.getElementById('halaman-shorts').style.display = 'none';
+            document.getElementById('category-chips').style.display = 'none';
+            document.getElementById('search-header').style.display = 'none';
+            document.getElementById('player-container').style.display = 'block';
+            window.scrollTo(0, 0);
+
+            const videoElement = document.getElementById('video-player-utama');
+            videoElement.poster = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+            
+            // Hentikan video sebelumnya (jika ada)
+            videoElement.pause();
+            videoElement.removeAttribute('src'); 
+            videoElement.load(); 
+
+            try {
+                // KUNCI UTAMA: LANGSUNG ARAHKAN SRC KE ENDPOINT STREAMING BACKEND
+                videoElement.src = `${BACKEND_URL}/api/stream-video?id=${videoId}`;
+                
+                // Coba putar otomatis
+                videoElement.play().catch(e => {
+                    console.log("Autoplay diblokir browser, user harus klik tombol play di video.");
+                });
+                
+            } catch (e) {
+                console.error(e);
+                tampilkanPesan("Server NontonYuk sedang offline atau sibuk. Coba lagi nanti.", "Error Server");
+            }
+
+            cekStatusLike(videoId);
+            cekStatusSubscribeVideo();
+            tampilkanKomentar(videoId); 
+            ambilRekomendasi(title, videoId); 
+        };
+
+        async function ambilRekomendasi(title, videoId) {
+            const container = document.getElementById('video-rekomendasi');
+            container.innerHTML = '<p style="color:var(--text-muted); grid-column: span 2; text-align:center; margin-top:10px;">Memuat rekomendasi...</p>';
+            
+            try {
+                const q = query(collection(db, "database_video"), limit(6));
+                const snap = await getDocs(q);
+                container.innerHTML = ''; 
+                let count = 0;
+                
+                snap.forEach((doc) => {
+                    try {
+                        const item = doc.data();
+                        if (item.videoId === videoId) return; 
+                        
+                        const card = document.createElement('div');
+                        card.className = 'video-card';
+                        card.onclick = () => putarVideo(item.videoId, item.title, item.channel, item.channelId, item.views, item.publishedAt);
+                        card.innerHTML = `
+                            <img src="${item.thumbnail || ''}">
+                            <div class="video-info">
+                                <h3 class="video-title">${item.title || 'Tanpa Judul'}</h3>
+                                <p class="meta-info">${buatMetaTeks(item.views, item.publishedAt)}</p>
+                            </div>
+                        `;
+                        container.appendChild(card);
+                        count++;
+                    } catch(err) { console.log("Gagal render 1 rekomendasi", err); }
+                });
+                
+                if(count === 0) {
+                    container.innerHTML = '<p style="grid-column: span 2; color:var(--text-muted); text-align:center; padding: 20px; border: 1px dashed var(--border-color); border-radius: 10px;">Belum ada video rekomendasi lain. Ayo cari video baru untuk menambah isi database!</p>';
+                }
+            } catch(e) { 
+                console.log("Gagal load rekomendasi", e);
+                container.innerHTML = '<p style="grid-column: span 2; color:red; text-align:center;">Gagal memuat rekomendasi.</p>';
+            }
+        }
+
+        // =========================================
+        // SISA FUNGSI (SHORTS, CARI, DLL)
+        // =========================================
+        window.bukaShorts = async () => {
+            document.getElementById('nav-beranda').classList.remove('active');
+            document.getElementById('nav-shorts').classList.add('active');
+            document.getElementById('halaman-beranda').style.display = 'none';
+            document.getElementById('halaman-channel').style.display = 'none';
+            document.getElementById('player-container').style.display = 'none';
+            document.getElementById('search-header').style.display = 'none';
+            document.getElementById('category-chips').style.display = 'none';
+            document.getElementById('halaman-shorts').style.display = 'block';
+            
+            document.getElementById('shorts-player-container').innerHTML = '<div style="color:white; text-align:center; margin-top:50%;">Memuat Shorts...</div>';
+
+            try {
+                const q = query(collection(db, "database_video"), limit(20));
+                const snap = await getDocs(q);
+                if (snap.empty) {
+                    document.getElementById('shorts-player-container').innerHTML = '<div style="color:white; text-align:center; margin-top:50%;">Database kosong. Cari video dulu!</div>';
+                    return;
+                }
+                const daftarVideo = [];
+                snap.forEach((doc) => { daftarVideo.push(doc.data()); });
+                const randomVideo = daftarVideo[Math.floor(Math.random() * daftarVideo.length)];
+                muatShortSpesifik(randomVideo.videoId);
+            } catch(e) { 
+                document.getElementById('shorts-player-container').innerHTML = '<div style="color:white; text-align:center; margin-top:50%;">Gagal memuat.</div>';
+            }
+        }
+
+        async function muatShortSpesifik(videoId) {
+            currentShortsId = videoId;
+            const docRef = doc(db, "database_video", videoId);
+            const docSnap = await getDoc(docRef);
+            let title = "Video Pendek";
+            let channelName = "NontonYuk";
+
+            if (docSnap.exists()) {
+                title = docSnap.data().title;
+                channelName = docSnap.data().channel;
+            }
+
+            const origin = window.location.origin;
+            document.getElementById('shorts-player-container').innerHTML = `
+                <iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&loop=1&playlist=${videoId}&controls=0&modestbranding=1&rel=0&playsinline=1&fs=0&origin=${origin}" 
+                    referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                <div class="shorts-overlay">
+                    <div class="info-kiri"><h4>@${channelName}</h4><p>${title}</p></div>
+                    <div class="aksi-kanan">
+                        <button class="btn-aksi" id="btn-like-shorts" onclick="toggleLikeShorts()">❤️</button>
+                        <button class="btn-aksi" onclick="nextShort()">⬇️</button>
+                    </div>
+                </div>
+            `;
+            cekStatusLikeShorts();
+        }
+
+        window.nextShort = async () => {
+            try {
+                const q = query(collection(db, "database_video"), limit(20));
+                const querySnapshot = await getDocs(q);
+                if (querySnapshot.empty) return;
+                const daftarVideo = [];
+                querySnapshot.forEach((doc) => { daftarVideo.push(doc.data()); });
+                const randomVideo = daftarVideo[Math.floor(Math.random() * daftarVideo.length)];
+                muatShortSpesifik(randomVideo.videoId);
+            } catch(e) {}
+        }
+
+        async function cekStatusLikeShorts() {
+            const docRef = doc(db, "saved_videos", `${uidAktif}_${currentShortsId}`);
+            const btn = document.getElementById('btn-like-shorts');
+            try {
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists() && btn) btn.style.background = "var(--accent-color)";
+            } catch(e) {}
+        }
+
+        window.toggleLikeShorts = async () => {
+            const btn = document.getElementById('btn-like-shorts');
+            const docRef = doc(db, "saved_videos", `${uidAktif}_${currentShortsId}`);
+            try {
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) { await deleteDoc(docRef); btn.style.background = "rgba(30,17,46,0.8)"; } 
+                else { await setDoc(docRef, { uid: uidAktif, videoId: currentShortsId }); btn.style.background = "var(--accent-color)"; }
+            } catch(e) {}
+        }
+
+        window.cariVideo = async () => {
+            const queryText = document.getElementById('search-input').value;
+            if (!queryText) return tampilkanPesan("Ketik dulu yang mau dicari!", "Peringatan");
+            
+            document.getElementById('category-chips').style.display = 'none';
+            document.getElementById('halaman-beranda').style.display = 'block';
+            document.getElementById('halaman-channel').style.display = 'none';
+            document.getElementById('halaman-shorts').style.display = 'none';
+            document.getElementById('player-container').style.display = 'none';
+            
+            const container = document.getElementById('video-list');
+            container.innerHTML = '<p style="text-align:center; grid-column: span 2;">Mencari...</p>';
+
+            try {
+                const resVideo = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=15&q=${encodeURIComponent(queryText)}&type=video&key=${YOUTUBE_API_KEY}`);
+                const dataVideo = await resVideo.json();
+                container.innerHTML = '';
+
+                if (dataVideo.error) return tampilkanPesan("Gagal mencari: " + dataVideo.error.message, "Error API");
+
+                if (dataVideo.items && dataVideo.items.length > 0) {
+                    const videoIds = dataVideo.items.map(item => item.id.videoId).filter(id => id).join(',');
+                    let viewCounts = {};
+
+                    if (videoIds) {
+                        try {
+                            const resStats = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoIds}&key=${YOUTUBE_API_KEY}`);
+                            const statsData = await resStats.json();
+                            if (statsData.items) {
+                                statsData.items.forEach(stat => {
+                                    viewCounts[stat.id] = parseInt(stat.statistics.viewCount || 0);
+                                });
+                            }
+                        } catch(e) { console.log("Gagal ambil views", e); }
+                    }
+
+                    for (const item of dataVideo.items) {
+                        const videoId = item.id.videoId;
+                        if (!videoId) continue; 
+                        const title = item.snippet.title;
+                        const channel = item.snippet.channelTitle;
+                        const thumbnail = item.snippet.thumbnails.high.url;
+                        const publishedAt = item.snippet.publishedAt;
+                        const chId = item.snippet.channelId;
+                        const views = viewCounts[videoId] || 0;
+
+                        try {
+                            await setDoc(doc(db, "database_video", videoId), {
+                                videoId: videoId, title: title, channel: channel, channelId: chId, 
+                                thumbnail: thumbnail, publishedAt: publishedAt, views: views, savedAt: new Date()
+                            });
+                        } catch (e) {}
+
+                        const card = document.createElement('div');
+                        card.className = 'video-card';
+                        card.onclick = () => putarVideo(videoId, title, channel, chId, views, publishedAt); 
+                        
+                        card.innerHTML = `
+                            <img src="${thumbnail}" loading="lazy">
+                            <div class="video-info">
+                                <h3 class="video-title">${title}</h3>
+                                <p class="channel-title">${channel}</p>
+                                <p class="meta-info">${buatMetaTeks(views, publishedAt)}</p>
+                            </div>
+                        `;
+                        container.appendChild(card);
+                    }
+                }
+            } catch (e) { tampilkanPesan("Gagal mengambil data.", "Error"); }
+        }
+
+        async function ambilVideoBeranda(kategori = "Semua") {
+            document.getElementById('halaman-beranda').style.display = 'block';
+            document.getElementById('halaman-channel').style.display = 'none';
+            document.getElementById('halaman-shorts').style.display = 'none';
+            document.getElementById('player-container').style.display = 'none';
+            document.getElementById('search-header').style.display = 'flex';
+            document.getElementById('category-chips').style.display = 'flex';
+            
+            document.getElementById('judul-halaman').innerText = `🔥 Database NontonYuk (${kategori})`;
+            const container = document.getElementById('video-list');
+            container.innerHTML = '<p style="text-align:center; grid-column: span 2;">Memuat database...</p>';
+            
+            try {
+                const q = query(collection(db, "database_video"), orderBy("savedAt", "desc"), limit(20));
+                const querySnapshot = await getDocs(q);
+                container.innerHTML = '';
+
+                if (querySnapshot.empty) {
+                    container.innerHTML = '<p style="text-align:center; grid-column: span 2;">Database masih kosong. Silakan cari video dulu!</p>';
+                    return;
+                }
+
+                querySnapshot.forEach((doc) => {
+                    try {
+                        const item = doc.data();
+                        if (kategori !== "Semua" && !item.title.toLowerCase().includes(kategori.toLowerCase())) return;
+
+                        const card = document.createElement('div');
+                        card.className = 'video-card';
+                        card.onclick = () => putarVideo(item.videoId, item.title, item.channel, item.channelId, item.views, item.publishedAt);
+                        
+                        card.innerHTML = `
+                            <img src="${item.thumbnail || ''}" loading="lazy">
+                            <div class="video-info">
+                                <h3 class="video-title">${item.title || 'Tanpa Judul'}</h3>
+                                <p class="channel-title">${item.channel || 'NontonYuk'}</p>
+                                <p class="meta-info">${buatMetaTeks(item.views, item.publishedAt)}</p>
+                            </div>
+                        `;
+                        container.appendChild(card);
+                    } catch(err) { console.log("Err card beranda", err); }
+                });
+            } catch (e) {
+                container.innerHTML = `<p style="text-align:center; grid-column: span 2; color:red;">Error: ${e.message}</p>`;
+            }
+        }
+
+        window.filterKategori = (kategori, elemen) => {
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            elemen.classList.add('active');
+            kategoriAktif = kategori;
+            ambilVideoBeranda(kategori);
+        }
+
+        window.bukaBeranda = () => {
+            document.getElementById('nav-beranda').classList.add('active');
+            document.getElementById('nav-shorts').classList.remove('active');
+            document.getElementById('player-container').style.display = 'none';
+            document.getElementById('shorts-player-container').innerHTML = '';
+            const videoElement = document.getElementById('video-player-utama');
+            if(videoElement) { videoElement.pause(); videoElement.removeAttribute('src'); videoElement.load(); }
+            ambilVideoBeranda(kategoriAktif);
+        }
+
+        window.tutupPemutar = () => {
+            const videoElement = document.getElementById('video-player-utama');
+            if(videoElement) { videoElement.pause(); videoElement.removeAttribute('src'); videoElement.load(); }
+            document.getElementById('player-container').style.display = 'none';
+            bukaBeranda();
+        }
+
+        window.bukaChannelDariVideo = () => {
+            document.getElementById('player-container').style.display = 'none';
+            document.getElementById('halaman-channel').style.display = 'block';
+            document.getElementById('halaman-beranda').style.display = 'none';
+            document.getElementById('search-header').style.display = 'none';
+            document.getElementById('category-chips').style.display = 'none';
+            const videoElement = document.getElementById('video-player-utama');
+            if(videoElement) { videoElement.pause(); }
+            ambilDataChannel(currentChannelId, currentChannelName);
+        }
+
+        window.kembaliDariChannel = () => {
+            document.getElementById('halaman-channel').style.display = 'none';
+            document.getElementById('halaman-beranda').style.display = 'block';
+            document.getElementById('search-header').style.display = 'flex';
+            document.getElementById('category-chips').style.display = 'flex';
+            ambilVideoBeranda(kategoriAktif);
+        }
+
+        async function ambilDataChannel(channelId, namaChannel) {
+            document.getElementById('channel-name').innerText = namaChannel || "Channel";
+            document.getElementById('channel-pfp').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(namaChannel || 'Channel')}&background=1e112e&color=b000ff&rounded=true&bold=true`;
+            document.getElementById('channel-stats').innerText = "Data dari gudang NontonYuk";
+            document.getElementById('channel-video-list').innerHTML = '<p style="text-align:center; grid-column: span 2;">Mencari video di database...</p>';
+
+            try {
+                const q = query(collection(db, "database_video"), where("channel", "==", namaChannel), limit(20));
+                const querySnapshot = await getDocs(q);
+                const container = document.getElementById('channel-video-list');
+                container.innerHTML = '';
+
+                if (querySnapshot.empty) {
+                    container.innerHTML = '<p style="text-align:center; grid-column: span 2;">Belum ada video dari channel ini di database.</p>';
+                    return;
+                }
+
+                querySnapshot.forEach((doc) => {
+                    try {
+                        const item = doc.data();
+                        const card = document.createElement('div');
+                        card.className = 'video-card';
+                        card.onclick = () => putarVideo(item.videoId, item.title, item.channel, item.channelId, item.views, item.publishedAt);
+                        
+                        card.innerHTML = `
+                            <img src="${item.thumbnail || ''}" loading="lazy">
+                            <div class="video-info">
+                                <h3 class="video-title">${item.title || 'Tanpa Judul'}</h3>
+                                <p class="channel-title">${item.channel || 'NontonYuk'}</p>
+                                <p class="meta-info">${buatMetaTeks(item.views, item.publishedAt)}</p>
+                            </div>
+                        `;
+                        container.appendChild(card);
+                    } catch(err) {}
+                });
+            } catch(e) {
+                document.getElementById('channel-video-list').innerHTML = '<p style="text-align:center; grid-column: span 2; color:red;">Gagal memuat database.</p>';
+            }
+        }
+
+        window.toggleLike = async () => {
+            const btn = document.getElementById('btn-like');
+            const docRef = doc(db, "saved_videos", `${uidAktif}_${currentVideoId}`);
+            try {
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) { await deleteDoc(docRef); btn.classList.remove('liked'); btn.innerText = "🤍 Simpan"; } 
+                else { await setDoc(docRef, { uid: uidAktif, videoId: currentVideoId }); btn.classList.add('liked'); btn.innerText = "💜 Tersimpan"; }
+            } catch (e) {}
+        }
+
+        async function cekStatusLike(videoId) {
+            const docRef = doc(db, "saved_videos", `${uidAktif}_${videoId}`);
+            const btn = document.getElementById('btn-like');
+            try {
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) { btn.classList.add('liked'); btn.innerText = "💜 Tersimpan"; } 
+                else { btn.classList.remove('liked'); btn.innerText = "🤍 Simpan"; }
+            } catch(e) {}
+        }
+
+        window.bagikanVideo = () => {
+            const url = `https://www.youtube.com/watch?v=${currentVideoId}`;
+            if (navigator.share) {
+                navigator.share({ title: document.getElementById('judul-video-putar').innerText, url: url }).catch(console.error);
+            } else {
+                navigator.clipboard.writeText(url);
+                tampilkanPesan("Link video berhasil disalin!", "Berhasil");
+            }
+        };
+
+        window.toggleSubscribeVideo = async () => {
+            const btn = document.getElementById('btn-sub-video');
+            if (!currentChannelName) return;
+            const docRef = doc(db, "subs", `${uidAktif}_${currentChannelName}`);
+            try {
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) { 
+                    await deleteDoc(docRef); 
+                    btn.classList.remove('subbed'); btn.classList.add('not-subbed'); btn.innerText = "Subscribe"; 
+                } else { 
+                    await setDoc(docRef, { uid: uidAktif, channelId: currentChannelName }); 
+                    btn.classList.add('subbed'); btn.classList.remove('not-subbed'); btn.innerText = "✓ Disubscribe"; 
+                }
+            } catch(e) {}
+        }
+
+        async function cekStatusSubscribeVideo() {
+            const btn = document.getElementById('btn-sub-video');
+            if (!currentChannelName) return;
+            const docRef = doc(db, "subs", `${uidAktif}_${currentChannelName}`);
+            try {
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    btn.classList.remove('not-subbed'); btn.classList.add('subbed'); btn.innerText = "✓ Disubscribe";
+                } else {
+                    btn.classList.add('not-subbed'); btn.classList.remove('subbed'); btn.innerText = "Subscribe";
+                }
+            } catch(e) {}
+        }
+
+        async function tampilkanKomentar(videoId) {
+            const list = document.getElementById('list-komentar');
+            list.innerHTML = "<p style='color:var(--text-muted);'>Memuat...</p>";
+            try {
+                const q = query(collection(db, "comments"), where("videoId", "==", videoId));
+                const querySnapshot = await getDocs(q);
+                list.innerHTML = ""; let count = 0;
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    list.innerHTML += `<div class="item"><b>${data.name}</b><br>${data.text}</div>`;
+                    count++;
+                });
+                document.getElementById('jumlah-komentar').innerText = count;
+                if(count === 0) list.innerHTML = "<p style='color:var(--text-muted);'>Belum ada komentar.</p>";
+            } catch(e) {}
+        }
+
+        window.kirimKomentar = async () => {
+            const input = document.getElementById('komentar-input');
+            if (!input.value.trim()) return;
+            try {
+                await addDoc(collection(db, "comments"), { videoId: currentVideoId, name: userAktif, text: input.value.trim(), createdAt: new Date() });
+                input.value = ""; tampilkanKomentar(currentVideoId);
+            } catch(e) {}
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            document.getElementById('loading-auth').style.display = 'none';
+            if (user) {
+                userAktif = user.displayName || user.email.split('@')[0];
+                uidAktif = user.uid;
+                document.getElementById('halaman-auth').style.display = 'none';
+                document.getElementById('app-utama').style.display = 'block';
+                ambilVideoBeranda(); 
+            } else {
+                document.getElementById('halaman-auth').style.display = 'flex';
+                document.getElementById('app-utama').style.display = 'none';
+            }
+        });
+
+        window.tampilkanDaftar = () => { document.getElementById('form-login').style.display = 'none'; document.getElementById('form-daftar').style.display = 'block'; }
+        window.tampilkanLogin = () => { document.getElementById('form-daftar').style.display = 'none'; document.getElementById('form-login').style.display = 'block'; }
+
+        window.prosesDaftar = async () => {
+            const nama = document.getElementById('daftar-nama').value.trim();
+            const email = document.getElementById('daftar-email').value.trim();
+            const pass = document.getElementById('daftar-password').value.trim();
+            if (!nama || !email || !pass) return tampilkanPesan("Semua kolom harus diisi!", "Peringatan");
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+                await updateProfile(userCredential.user, { displayName: nama });
+                tampilkanPesan("Pendaftaran Berhasil! Silakan Login.", "Sukses");
+                tampilkanLogin();
+            } catch (error) { tampilkanPesan("Gagal Daftar: " + error.message, "Error"); }
+        }
+
+        window.prosesLogin = async () => {
+            const email = document.getElementById('login-email').value.trim();
+            const pass = document.getElementById('login-password').value.trim();
+            if (!email || !pass) return tampilkanPesan("Email dan Password harus diisi!", "Peringatan");
+            try { await signInWithEmailAndPassword(auth, email, pass); } 
+            catch (error) { tampilkanPesan("Login Gagal: Email atau Password salah.", "Error"); }
+        }
+    </script>
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('service-worker.js')
+            .then(registration => console.log('SW registered!'))
+            .catch(err => console.log('SW failed: ', err));
+        });
+      }
+    </script>
+</body>
+  </html>
